@@ -16,7 +16,7 @@ export function Header() {
             <img
               alt="Achievement Analytics Interface Logo"
               className="h-10 w-10 object-contain"
-              src="/logo.jpg"
+              src="logo.jpg"
             />
           </Link>
           <div className="flex items-center gap-6">
