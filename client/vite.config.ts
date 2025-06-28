@@ -10,8 +10,8 @@ const __dirname = dirname(__filename)
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  // Base path for GitHub Pages - adjust this to match your repository name
-  base: process.env.NODE_ENV === 'production' ? '/gw2-coop/' : '/',
+  // Base path - use environment variable or default to /gw2-coop/ for production
+  base: process.env.VITE_BASE_PATH || (process.env.NODE_ENV === 'production' ? '/gw2-coop/' : '/'),
   test: {
     globals: true,
     environment: 'jsdom',
