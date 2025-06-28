@@ -40,11 +40,7 @@ function HomePage() {
           <div className="text-center mb-12 animate-float">
             {/* Logo */}
             <div className="logo-container mb-6">
-              <img
-                alt="Achievement Analytics Interface"
-                className="w-full h-full"
-                src="logo.jpg"
-              />
+              <img alt="Achievement Analytics Interface" className="w-full h-full" src="logo.jpg" />
             </div>
             <h1 className="text-5xl font-bold text-primary mb-4 font-serif tracking-wider">
               Achievement Tracker
