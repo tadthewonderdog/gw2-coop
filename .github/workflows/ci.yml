@@ -17,6 +17,9 @@ permissions:
 env:
   NODE_VERSION: '20'
   WORKING_DIRECTORY: client
+  VITE_USE_GW2_CACHE: true
+  VITE_BASE_PATH: /gw2-coop/
+
 
 jobs:
   # Security and dependency checks
