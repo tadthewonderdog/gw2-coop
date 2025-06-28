@@ -1,5 +1,5 @@
 import { Helmet } from "react-helmet-async";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Link } from "react-router-dom";
 
 import { Header } from "@/components/Header";
 import { ThemeProvider } from "@/components/ui/theme-provider";
@@ -58,34 +58,34 @@ function HomePage() {
               <p className="text-card-foreground mb-4">
                 Check your daily goals and get cool rewards!
               </p>
-              <a aria-label="View daily tasks" className={linkClasses} href="/daily">
+              <Link aria-label="View daily tasks" className={linkClasses} to="/daily">
                 View Daily Tasks
                 <span className="ml-2 transform group-hover:translate-x-1 transition-transform">
                   →
                 </span>
-              </a>
+              </Link>
             </div>
 
             <div className={featureCardClasses}>
               <h2 className="text-2xl font-bold text-primary mb-4">Collections</h2>
               <p className="text-card-foreground mb-4">Keep track of your awesome gear and items</p>
-              <a aria-label="View collections" className={linkClasses} href="/collections">
+              <Link aria-label="View collections" className={linkClasses} to="/collections">
                 View Collections
                 <span className="ml-2 transform group-hover:translate-x-1 transition-transform">
                   →
                 </span>
-              </a>
+              </Link>
             </div>
 
             <div className={featureCardClasses}>
               <h2 className="text-2xl font-bold text-primary mb-4">Group Manager</h2>
               <p className="text-card-foreground mb-4">Create and manage your adventuring groups</p>
-              <a aria-label="Manage groups" className={linkClasses} href="/group-management">
+              <Link aria-label="Manage groups" className={linkClasses} to="/group-management">
                 Manage Groups
                 <span className="ml-2 transform group-hover:translate-x-1 transition-transform">
                   →
                 </span>
-              </a>
+              </Link>
             </div>
           </div>
         </div>
