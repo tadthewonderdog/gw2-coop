@@ -1,0 +1,16 @@
+# Global owners
+* @tadthewonderdog
+
+# Workflow files require admin approval
+.github/ @tadthewonderdog
+.github/workflows/ @tadthewonderdog
+
+# Configuration files
+package.json @tadthewonderdog
+tsconfig.json @tadthewonderdog
+vite.config.ts @tadthewonderdog
+tailwind.config.js @tadthewonderdog
+
+# Security-sensitive files
+/.env* @tadthewonderdog
+/src/services/ @tadthewonderdog

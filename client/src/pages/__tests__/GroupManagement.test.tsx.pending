@@ -1,0 +1,125 @@
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
+import { GroupManagement } from "../GroupManagement";
+
+describe("GroupManagement", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("renders the group management interface", () => {
+    render(<GroupManagement />);
+    expect(screen.getByText("Groups")).toBeInTheDocument();
+    expect(screen.getByText("Create New Group")).toBeInTheDocument();
+  });
+
+  it("creates a new group successfully", async () => {
+    render(<GroupManagement />);
+
+    // First click the Create New Group button to open the dialog
+    const createNewGroupButton = screen.getByRole("button", { name: /create new group/i });
+    fireEvent.click(createNewGroupButton);
+
+    // Now find the input and button in the dialog
+    const groupNameInput = screen.getByPlaceholderText(/enter group name/i);
+    const createButton = screen.getByRole("button", { name: /create group/i });
+
+    fireEvent.change(groupNameInput, { target: { value: "Test Group" } });
+    fireEvent.click(createButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("Test Group")).toBeInTheDocument();
+    });
+  });
+
+  it("shows error when creating group with empty name", async () => {
+    render(<GroupManagement />);
+    const createNewGroupButton = screen.getByRole("button", { name: /create new group/i });
+    fireEvent.click(createNewGroupButton);
+    const createButton = screen.getByRole("button", { name: /create group/i });
+    fireEvent.click(createButton);
+    const errorMessages = await screen.findAllByText("Please give your group a name!");
+    expect(errorMessages.length).toBeGreaterThan(0);
+  });
+
+  it("shows error when creating group with duplicate name", async () => {
+    render(<GroupManagement />);
+    const createNewGroupButton = screen.getByRole("button", { name: /create new group/i });
+    fireEvent.click(createNewGroupButton);
+    const groupNameInput = screen.getByPlaceholderText(/enter group name/i);
+    const createButton = screen.getByRole("button", { name: /create group/i });
+    fireEvent.change(groupNameInput, { target: { value: "Test Group" } });
+    fireEvent.click(createButton);
+    fireEvent.click(createNewGroupButton);
+    fireEvent.change(groupNameInput, { target: { value: "Test Group" } });
+    fireEvent.click(createButton);
+    const errorMessages = await screen.findAllByText("This group name is already taken. Try another one!");
+    expect(errorMessages.length).toBeGreaterThan(0);
+  });
+
+  it("adds a member to a group successfully", async () => {
+    render(<GroupManagement />);
+
+    // First click the Create New Group button to open the dialog
+    const createNewGroupButton = screen.getByRole("button", { name: /create new group/i });
+    fireEvent.click(createNewGroupButton);
+
+    // Now find the input and button in the dialog
+    const groupNameInput = screen.getByPlaceholderText(/enter group name/i);
+    const createButton = screen.getByRole("button", { name: /create group/i });
+    fireEvent.change(groupNameInput, { target: { value: "Test Group" } });
+    fireEvent.click(createButton);
+
+    // Select the group
+    const groupElement = screen.getByText("Test Group");
+    fireEvent.click(groupElement);
+
+    // Add a member
+    const memberNameInput = screen.getByPlaceholderText(/enter member name/i);
+    const addMemberButton = screen.getByRole("button", { name: /add member/i });
+
+    fireEvent.change(memberNameInput, { target: { value: "New Member" } });
+    fireEvent.click(addMemberButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("New Member")).toBeInTheDocument();
+    });
+  });
+
+  it("shows error when adding member with empty name", async () => {
+    render(<GroupManagement />);
+    const createNewGroupButton = screen.getByRole("button", { name: /create new group/i });
+    fireEvent.click(createNewGroupButton);
+    const groupNameInput = screen.getByPlaceholderText(/enter group name/i);
+    const createButton = screen.getByRole("button", { name: /create group/i });
+    fireEvent.change(groupNameInput, { target: { value: "Test Group" } });
+    fireEvent.click(createButton);
+    const groupElement = screen.getByText("Test Group");
+    fireEvent.click(groupElement);
+    const addMemberButton = screen.getByRole("button", { name: /add member/i });
+    fireEvent.click(addMemberButton);
+    const errorMessages = await screen.findAllByText("Please enter a name for the new member!");
+    expect(errorMessages.length).toBeGreaterThan(0);
+  });
+
+  it("shows error when adding duplicate member name", async () => {
+    render(<GroupManagement />);
+    const createNewGroupButton = screen.getByRole("button", { name: /create new group/i });
+    fireEvent.click(createNewGroupButton);
+    const groupNameInput = screen.getByPlaceholderText(/enter group name/i);
+    const createButton = screen.getByRole("button", { name: /create group/i });
+    fireEvent.change(groupNameInput, { target: { value: "Test Group" } });
+    fireEvent.click(createButton);
+    const groupElement = screen.getByText("Test Group");
+    fireEvent.click(groupElement);
+    const memberNameInput = screen.getByPlaceholderText(/enter member name/i);
+    fireEvent.change(memberNameInput, { target: { value: "New Member" } });
+    const addMemberButton = screen.getByRole("button", { name: /add member/i });
+    fireEvent.click(addMemberButton);
+    fireEvent.change(memberNameInput, { target: { value: "New Member" } });
+    fireEvent.click(addMemberButton);
+    const errorMessages = await screen.findAllByText("Someone in the group already has this name. Try another one!");
+    expect(errorMessages.length).toBeGreaterThan(0);
+  });
+});

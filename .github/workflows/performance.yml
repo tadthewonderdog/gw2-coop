@@ -1,0 +1,75 @@
+name: Performance Monitoring
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  performance:
+    name: Performance Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+          
+      - name: Install dependencies
+        run: npm ci
+        working-directory: client
+        
+      - name: Build application
+        run: npm run build
+        working-directory: client
+        
+      - name: Analyze bundle size
+        run: |
+          echo "📦 Bundle Size Analysis:"
+          echo "Total bundle size:"
+          du -sh dist/
+          echo ""
+          echo "Individual file sizes:"
+          find dist -type f -name "*.js" -o -name "*.css" | xargs du -sh | sort -hr
+          echo ""
+          echo "Gzipped sizes (estimated):"
+          find dist -type f -name "*.js" -o -name "*.css" | xargs gzip -c | wc -c | awk '{print $1/1024 " KB (gzipped)"}'
+        working-directory: client
+        
+      - name: Comment PR with performance data
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Get bundle size data
+            const distPath = path.join(process.cwd(), 'client', 'dist');
+            const totalSize = fs.statSync(distPath).size / 1024; // KB
+            
+            const comment = `## 📊 Performance Report
+            
+            **Bundle Size:** ${totalSize.toFixed(2)} KB
+            
+            This PR's bundle size has been analyzed. Please review the changes and ensure they don't significantly impact performance.
+            
+            > 💡 Tip: Consider code splitting for large components or lazy loading for routes.`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            }); 

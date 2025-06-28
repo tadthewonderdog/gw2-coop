@@ -1,0 +1,174 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 50% 98%; /* Icy white background */
+    --foreground: 210 40% 20%; /* Deep blue-gray text */
+    --card: 210 50% 100%; /* Pure white cards */
+    --card-foreground: 210 40% 20%;
+    --popover: 210 50% 100%;
+    --popover-foreground: 210 40% 20%;
+    --primary: 200 100% 50%; /* Bright icy blue */
+    --primary-foreground: 210 50% 98%;
+    --secondary: 210 30% 90%; /* Light blue-gray */
+    --secondary-foreground: 210 40% 20%;
+    --muted: 210 30% 90%;
+    --muted-foreground: 210 30% 50%;
+    --accent: 200 100% 50%;
+    --accent-foreground: 210 50% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 50% 98%;
+    --border: 210 30% 80%;
+    --input: 210 30% 80%;
+    --ring: 200 100% 50%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 210 40% 10%; /* Deep blue-black */
+    --foreground: 210 30% 90%; /* Light blue-gray text */
+    --card: 210 40% 15%; /* Slightly lighter blue-black */
+    --card-foreground: 210 30% 90%;
+    --popover: 210 40% 15%;
+    --popover-foreground: 210 30% 90%;
+    --primary: 200 100% 50%; /* Bright icy blue */
+    --primary-foreground: 210 40% 10%;
+    --secondary: 210 40% 20%; /* Darker blue-gray */
+    --secondary-foreground: 210 30% 90%;
+    --muted: 210 40% 20%;
+    --muted-foreground: 210 30% 70%;
+    --accent: 200 100% 50%;
+    --accent-foreground: 210 40% 10%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 30% 90%;
+    --border: 210 40% 20%;
+    --input: 210 40% 20%;
+    --ring: 200 100% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-[hsl(var(--border))];
+  }
+  body {
+    @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))];
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes frost-glow {
+  0%,
+  100% {
+    opacity: 0.1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@keyframes pulse-border {
+  0%,
+  100% {
+    border-color: hsl(200, 100%, 50%, 0.2);
+  }
+  50% {
+    border-color: hsl(200, 100%, 50%, 0.4);
+  }
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes particle-float {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-5px) scale(1.2);
+    opacity: 0.8;
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 8s linear infinite;
+  background: linear-gradient(90deg, transparent, hsl(200, 100%, 50%, 0.1), transparent);
+  background-size: 1000px 100%;
+}
+
+.animate-frost-glow {
+  animation: frost-glow 4s ease-in-out infinite;
+}
+
+.animate-pulse-border {
+  animation: pulse-border 4s ease-in-out infinite;
+}
+
+/* Logo animations */
+.logo-container {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto;
+}
+
+.logo-container svg {
+  width: 100%;
+  height: 100%;
+}
+
+.logo-container circle:first-child {
+  animation: rotate 20s linear infinite;
+}
+
+.logo-container .frost-particles circle {
+  animation: particle-float 3s ease-in-out infinite;
+}
+
+.logo-container .frost-particles circle:nth-child(2) {
+  animation-delay: 0.5s;
+}
+
+.logo-container .frost-particles circle:nth-child(3) {
+  animation-delay: 1s;
+}
+
+.logo-container .frost-particles circle:nth-child(4) {
+  animation-delay: 1.5s;
+}
+
+.dialog-content-bg {
+  background-color: hsl(var(--background)) !important;
+}
