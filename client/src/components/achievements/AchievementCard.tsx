@@ -32,7 +32,7 @@ export const AchievementCard = memo(function AchievementCard({
         {achievement.icon ? (
           <img alt="" className="w-8 h-8 rounded-sm" src={achievement.icon} />
         ) : (
-          <div className="w-8 h-8 rounded-sm bg-muted flex items-center justify-center">
+          <div className="w-8 h-8 rounded-sm bg-muted flex items-center justify-center" data-testid="trophy-icon">
             <Trophy className="w-5 h-5 text-muted-foreground" />
           </div>
         )}

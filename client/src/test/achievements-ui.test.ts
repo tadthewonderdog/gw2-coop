@@ -1,21 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import type { StateCreator, StoreApi } from "zustand";
 import type { PersistOptions } from "zustand/middleware";
-
-// Create a shared in-memory storage for the test and persist middleware
-const testStorage = (() => {
-  const store = new Map<string, string>();
-  return {
-    getItem: (key: string): string | null => store.get(key) ?? null,
-    setItem: (key: string, value: string) => store.set(key, value),
-    removeItem: (key: string) => store.delete(key),
-    clear: () => store.clear(),
-    key: (i: number): string | null => Array.from(store.keys())[i] ?? null,
-    get length() {
-      return store.size;
-    },
-  };
-})();
+import { testStorage } from "../test/setup";
 
 // Custom persist mock with [TEST] logging and immediate testStorage writes
 vi.mock("zustand/middleware", async (importOriginal) => {

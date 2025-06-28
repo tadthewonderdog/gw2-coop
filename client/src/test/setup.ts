@@ -37,7 +37,7 @@ expect.extend({
 });
 
 // Mock localStorage
-const localStorageMock = {
+export const localStorageMock = {
   getItem: vi.fn(),
   setItem: vi.fn(),
   clear: vi.fn(),
@@ -57,6 +57,54 @@ const sessionStorageMock = {
   key: vi.fn(),
 };
 Object.defineProperty(window, "sessionStorage", { value: sessionStorageMock });
+
+// Shared in-memory storage for Zustand persist middleware
+export const testStorage = (() => {
+  const store = new Map<string, string>();
+  return {
+    getItem: (key: string): string | null => store.get(key) ?? null,
+    setItem: (key: string, value: string) => store.set(key, value),
+    removeItem: (key: string) => store.delete(key),
+    clear: () => store.clear(),
+    key: (i: number): string | null => Array.from(store.keys())[i] ?? null,
+    get length() {
+      return store.size;
+    },
+  };
+})();
+
+// Custom persist mock for Zustand using testStorage
+import type { StateCreator, StoreApi } from "zustand";
+import type { PersistOptions } from "zustand/middleware";
+
+vi.mock("zustand/middleware", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("zustand/middleware")>();
+  const persistImpl = vi.fn(
+    (config: StateCreator<unknown, [], [], unknown>, options: PersistOptions<unknown, unknown>) => {
+      const storage = testStorage;
+      return (set: (state: unknown) => void, get: () => unknown, api: StoreApi<unknown>) => {
+        const state = config(
+          (updates: unknown) => {
+            set(updates);
+            const currentState = get();
+            const value = JSON.stringify({
+              state: options?.partialize ? options.partialize(currentState) : currentState,
+              version: 0,
+            });
+            storage.setItem(options?.name || "zustand", value);
+          },
+          get,
+          api
+        );
+        return state;
+      };
+    }
+  );
+  return {
+    ...actual,
+    persist: persistImpl,
+  };
+});
 
 // Automatically cleanup after each test
 afterEach(() => {
