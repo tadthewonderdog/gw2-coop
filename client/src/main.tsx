@@ -13,7 +13,7 @@ const basename: string = import.meta.env.VITE_BASE_PATH || "/";
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const rootElement = document.getElementById("root");
-if (!rootElement) {
+if (!(rootElement instanceof HTMLElement)) {
   throw new Error("Root element not found");
 }
 

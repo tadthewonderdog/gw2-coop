@@ -6,14 +6,14 @@ import { Alert, AlertDescription } from "../alert";
 describe("Alert", () => {
   it("renders with default variant", () => {
     render(<Alert>Test alert message</Alert>);
-    
+
     expect(screen.getByRole("alert")).toBeInTheDocument();
     expect(screen.getByText("Test alert message")).toBeInTheDocument();
   });
 
   it("renders with destructive variant", () => {
     render(<Alert variant="destructive">Destructive alert message</Alert>);
-    
+
     const alert = screen.getByRole("alert");
     expect(alert).toBeInTheDocument();
     expect(alert).toHaveClass("border-destructive/50", "text-destructive");
@@ -21,7 +21,7 @@ describe("Alert", () => {
 
   it("applies custom className", () => {
     render(<Alert className="custom-class">Test alert</Alert>);
-    
+
     const alert = screen.getByRole("alert");
     expect(alert).toHaveClass("custom-class");
   });
@@ -29,20 +29,24 @@ describe("Alert", () => {
   it("forwards ref correctly", () => {
     const ref = { current: null };
     render(<Alert ref={ref}>Test alert</Alert>);
-    
+
     expect(ref.current).toBeInstanceOf(HTMLDivElement);
   });
 
   it("renders with additional props", () => {
-    render(<Alert data-testid="custom-alert" aria-label="Custom alert">Test alert</Alert>);
-    
+    render(
+      <Alert aria-label="Custom alert" data-testid="custom-alert">
+        Test alert
+      </Alert>
+    );
+
     const alert = screen.getByTestId("custom-alert");
     expect(alert).toHaveAttribute("aria-label", "Custom alert");
   });
 
   it("handles empty content", () => {
     render(<Alert />);
-    
+
     expect(screen.getByRole("alert")).toBeInTheDocument();
   });
 
@@ -53,7 +57,7 @@ describe("Alert", () => {
         <span>With multiple elements</span>
       </Alert>
     );
-    
+
     expect(screen.getByText("Complex content")).toBeInTheDocument();
     expect(screen.getByText("With multiple elements")).toBeInTheDocument();
   });
@@ -61,14 +65,14 @@ describe("Alert", () => {
   it("handles very long content", () => {
     const longContent = "a".repeat(1000);
     render(<Alert>{longContent}</Alert>);
-    
+
     expect(screen.getByText(longContent)).toBeInTheDocument();
   });
 
   it("handles special characters in content", () => {
     const specialContent = "Alert with @#$%^&*() characters";
     render(<Alert>{specialContent}</Alert>);
-    
+
     expect(screen.getByText(specialContent)).toBeInTheDocument();
   });
 });
@@ -76,13 +80,13 @@ describe("Alert", () => {
 describe("AlertDescription", () => {
   it("renders with default styling", () => {
     render(<AlertDescription>Test description</AlertDescription>);
-    
+
     expect(screen.getByText("Test description")).toBeInTheDocument();
   });
 
   it("applies custom className", () => {
     render(<AlertDescription className="custom-desc-class">Test description</AlertDescription>);
-    
+
     const description = screen.getByText("Test description");
     expect(description).toHaveClass("custom-desc-class");
   });
@@ -90,25 +94,25 @@ describe("AlertDescription", () => {
   it("forwards ref correctly", () => {
     const ref = { current: null };
     render(<AlertDescription ref={ref}>Test description</AlertDescription>);
-    
+
     expect(ref.current).toBeInstanceOf(HTMLDivElement);
   });
 
   it("renders with additional props", () => {
     render(
-      <AlertDescription data-testid="custom-desc" aria-label="Custom description">
+      <AlertDescription aria-label="Custom description" data-testid="custom-desc">
         Test description
       </AlertDescription>
     );
-    
+
     const description = screen.getByTestId("custom-desc");
     expect(description).toHaveAttribute("aria-label", "Custom description");
   });
 
   it("handles empty content", () => {
     render(<AlertDescription />);
-    
-    const description = screen.getByRole("generic");
+
+    const description = screen.getByTestId("alert-description");
     expect(description).toBeInTheDocument();
   });
 
@@ -119,7 +123,7 @@ describe("AlertDescription", () => {
         <strong>Bold content</strong>
       </AlertDescription>
     );
-    
+
     expect(screen.getByText("Paragraph content")).toBeInTheDocument();
     expect(screen.getByText("Bold content")).toBeInTheDocument();
   });
@@ -127,14 +131,14 @@ describe("AlertDescription", () => {
   it("handles very long content", () => {
     const longContent = "a".repeat(1000);
     render(<AlertDescription>{longContent}</AlertDescription>);
-    
+
     expect(screen.getByText(longContent)).toBeInTheDocument();
   });
 
   it("handles special characters in content", () => {
     const specialContent = "Description with @#$%^&*() characters";
     render(<AlertDescription>{specialContent}</AlertDescription>);
-    
+
     expect(screen.getByText(specialContent)).toBeInTheDocument();
   });
 });
@@ -146,7 +150,7 @@ describe("Alert Integration", () => {
         <AlertDescription>This is a description</AlertDescription>
       </Alert>
     );
-    
+
     expect(screen.getByRole("alert")).toBeInTheDocument();
     expect(screen.getByText("This is a description")).toBeInTheDocument();
   });
@@ -158,7 +162,7 @@ describe("Alert Integration", () => {
         <AlertDescription>Second description</AlertDescription>
       </Alert>
     );
-    
+
     expect(screen.getByText("First description")).toBeInTheDocument();
     expect(screen.getByText("Second description")).toBeInTheDocument();
   });
@@ -171,10 +175,10 @@ describe("Alert Integration", () => {
         <button>Action button</button>
       </Alert>
     );
-    
+
     expect(screen.getByRole("alert")).toBeInTheDocument();
     expect(screen.getByText("Alert Title")).toBeInTheDocument();
     expect(screen.getByText("Alert description")).toBeInTheDocument();
     expect(screen.getByRole("button")).toBeInTheDocument();
   });
-}); 
+});

@@ -2,17 +2,17 @@
 # https://docs.github.com/en/code-security/supply-chain-security/understanding-your-software-supply-chain/configuring-dependency-review
 
 # Vulnerabilities with these severities will cause the action to fail
-fail_on_severity: 'critical'
+fail_on_severity: "critical"
 
 # Allow these vulnerabilities (by GHSA ID)
 # allow_ghsas:
-  # Example: - GHSA-abcd-1234-5678
+# Example: - GHSA-abcd-1234-5678
 
 # Block these dependencies
 # deny_packages:
-  # Example for npm packages
-  # - name: "lodash"
-  #   version: "<4.17.21"
+# Example for npm packages
+# - name: "lodash"
+#   version: "<4.17.21"
 
 # Allow only these licenses
 # allow_licenses:

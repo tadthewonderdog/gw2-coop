@@ -38,6 +38,7 @@ export const AchievementFilters = memo(function AchievementFilters() {
         />
         {filters.searchQuery && (
           <Button
+            aria-label="Clear search"
             className="absolute right-1 top-1 h-7 w-7"
             size="icon"
             variant="ghost"

@@ -24,7 +24,13 @@ export function useThemePreference(storageKey = "vite-ui-theme", defaultTheme: T
   });
 
   useEffect(() => {
-    if (typeof window === "undefined" || !window.matchMedia || !window.document || !window.document.body) return;
+    if (
+      typeof window === "undefined" ||
+      !window.matchMedia ||
+      !window.document ||
+      !window.document.body
+    )
+      return;
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
     function applyTheme(theme: Theme) {

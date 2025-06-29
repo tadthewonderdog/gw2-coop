@@ -2,21 +2,8 @@ import "@testing-library/jest-dom";
 import { cleanup } from "@testing-library/react";
 import { afterEach, vi, expect } from "vitest";
 import "axe-core";
-
-// Mock matchMedia
-Object.defineProperty(window, "matchMedia", {
-  writable: true,
-  value: vi.fn().mockImplementation((query: string) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  })),
-});
+import type { StateCreator, StoreApi } from "zustand";
+import type { PersistOptions } from "zustand/middleware";
 
 // Custom matchers
 expect.extend({
@@ -34,6 +21,21 @@ expect.extend({
       };
     }
   },
+});
+
+// Mock matchMedia
+Object.defineProperty(window, "matchMedia", {
+  writable: true,
+  value: vi.fn().mockImplementation((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
 });
 
 // Mock localStorage
@@ -74,9 +76,6 @@ export const testStorage = (() => {
 })();
 
 // Custom persist mock for Zustand using testStorage
-import type { StateCreator, StoreApi } from "zustand";
-import type { PersistOptions } from "zustand/middleware";
-
 vi.mock("zustand/middleware", async (importOriginal) => {
   const actual = await importOriginal<typeof import("zustand/middleware")>();
   const persistImpl = vi.fn(

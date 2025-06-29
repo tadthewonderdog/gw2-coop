@@ -1,9 +1,11 @@
 # Code Cleanup TODO - Remaining Tasks
 
 ## Overview
+
 This document outlines the remaining code cleanup tasks after completing Phases 1-3. The current status shows all major type safety, error handling, and performance tasks are complete. The next steps focus on polish, documentation, testing, and ongoing improvements.
 
 ## Current Status
+
 - **Total warnings reduced:** 66 → 0 (100% improvement)
 - **Completed phases:** 1-5 (Unused variables, Type safety basics, React hooks, Advanced Type Safety, Performance)
 - **Completed tasks:** 4.1.1, 4.1.2, 4.2.1, 4.2.2, 4.3.1, 4.4.1, 5.1.1, 5.1.2, 5.2.1 (see below)
@@ -20,6 +22,7 @@ This document outlines the remaining code cleanup tasks after completing Phases 
 ### 4.1 Deep Type Inference Improvements
 
 #### ✅ Task 4.1.1: Create Custom Type Guards
+
 **File:** `src/types/achievement-schemas.ts`
 **Status:** COMPLETED
 **Goal:** Create proper type guards for runtime validation
@@ -38,11 +41,12 @@ export function isAchievementCategory(obj: unknown): obj is AchievementCategory 
 }
 
 export function isAchievementArray(arr: unknown): arr is Achievement[] {
-  return Array.isArray(arr) && arr.every(item => AchievementSchema.safeParse(item).success);
+  return Array.isArray(arr) && arr.every((item) => AchievementSchema.safeParse(item).success);
 }
 ```
 
 #### ✅ Task 4.1.2: Improve Category Type Safety
+
 **File:** `src/pages/Achievements.tsx`
 **Status:** COMPLETED
 **Goal:** Replace unsafe member access with proper type guards
@@ -63,6 +67,7 @@ const achievementIds = selectedCategory.achievements.map((a: number | { id: numb
 ### 4.2 Error Handling Pattern Standardization
 
 #### ✅ Task 4.2.1: Create Error Types
+
 **File:** `src/types/errors.ts` (new file)
 **Status:** COMPLETED
 **Goal:** Define proper error types for better type safety
@@ -94,6 +99,7 @@ export function isAPIError(error: unknown): error is APIError {
 ```
 
 #### ✅ Task 4.2.2: Implement Error Boundaries
+
 **File:** `src/components/ErrorBoundary.tsx`
 **Status:** COMPLETED
 **Goal:** Improve error boundary with proper typing
@@ -122,6 +128,7 @@ private getErrorMessage(): string {
 ### 4.3 Achievement Data Processing Improvements
 
 #### ✅ Task 4.3.1: Safe Achievement Processing
+
 **File:** `src/pages/Achievements.tsx`
 **Lines:** 165
 **Status:** COMPLETED
@@ -165,6 +172,7 @@ const currentAchievements = useMemo((): Achievement[] | null => {
 ### 4.4 Zod Schema Enhancements
 
 #### Task 4.4.1: Improve Achievement Schemas
+
 **File:** `src/types/achievement-schemas.ts`
 **Goal:** Add more specific validation rules
 
@@ -189,16 +197,20 @@ export function validateAchievementCategory(data: unknown): AchievementCategory 
 ### 5.1 React Performance Improvements
 
 #### Task 5.1.1: Memoize Expensive Components
+
 **File:** `src/components/achievements/AchievementCard.tsx`
 **Goal:** Add React.memo for performance
 
 ```typescript
-export const AchievementCard = React.memo<AchievementCardProps>(({ achievement, accountAchievement }) => {
-  // Component implementation
-});
+export const AchievementCard = React.memo<AchievementCardProps>(
+  ({ achievement, accountAchievement }) => {
+    // Component implementation
+  }
+);
 ```
 
 #### Task 5.1.2: Optimize Achievement Filters
+
 **File:** `src/components/achievements/AchievementFilters.tsx`
 **Goal:** Memoize filter calculations
 
@@ -211,27 +223,31 @@ const filteredAchievements = useMemo(() => {
 ### 5.2 Code Splitting
 
 #### Task 5.2.1: Lazy Load Heavy Components
+
 **File:** `src/pages/Achievements.tsx`
 **Goal:** Implement lazy loading for better performance
 
 ```typescript
-const AchievementCard = lazy(() => import('@/components/achievements/AchievementCard'));
-const AchievementFilters = lazy(() => import('@/components/achievements/AchievementFilters'));
+const AchievementCard = lazy(() => import("@/components/achievements/AchievementCard"));
+const AchievementFilters = lazy(() => import("@/components/achievements/AchievementFilters"));
 ```
 
 ## Implementation Priority
 
 ### High Priority (Fix remaining warnings)
+
 1. ✅ **Task 4.1.1** - Create Custom Type Guards
 2. ✅ **Task 4.1.2** - Improve Category Type Safety
 3. ✅ **Task 4.3.1** - Safe Achievement Processing
 
 ### Medium Priority (Improve robustness)
+
 4. ✅ **Task 4.2.1** - Create Error Types
 5. ✅ **Task 4.2.2** - Implement Error Boundaries
 6. **Task 4.4.1** - Improve Achievement Schemas
 
 ### Low Priority (Performance)
+
 7. **Task 5.1.1** - Memoize Expensive Components
 8. **Task 5.1.2** - Optimize Achievement Filters
 9. **Task 5.2.1** - Lazy Load Heavy Components
@@ -239,12 +255,14 @@ const AchievementFilters = lazy(() => import('@/components/achievements/Achievem
 ## Testing Strategy
 
 ### For Each Task:
+
 1. **Unit Tests:** Add/update tests for new type guards and error handling
 2. **Integration Tests:** Verify error boundaries work correctly
 3. **Type Tests:** Ensure TypeScript compilation passes
 4. **Lint Tests:** Verify warnings are reduced
 
 ### Test Files to Update:
+
 - `src/test/achievements-ui.test.ts`
 - `src/pages/__tests__/Achievements.test.tsx`
 - `src/components/__tests__/ErrorBoundary.test.tsx`
@@ -252,12 +270,14 @@ const AchievementFilters = lazy(() => import('@/components/achievements/Achievem
 ## Success Criteria
 
 ### Phase 4 Complete When:
+
 - [ ] All 4 remaining warnings are resolved
 - [ ] Type safety is improved without breaking functionality
 - [ ] Error handling is more robust and type-safe
 - [ ] All tests continue to pass
 
 ### Phase 5 Complete When:
+
 - [ ] Performance is measurably improved
 - [ ] Bundle size is optimized
 - [ ] User experience is enhanced
@@ -274,4 +294,4 @@ const AchievementFilters = lazy(() => import('@/components/achievements/Achievem
 - **Phase 4:** 1-2 days (remaining type safety work)
 - **Phase 5:** 1-2 days (performance optimizations)
 
-**Total Estimated Effort:** 2-4 days for complete cleanup 
+**Total Estimated Effort:** 2-4 days for complete cleanup
