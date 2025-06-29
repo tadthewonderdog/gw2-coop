@@ -15,7 +15,7 @@ const files = ["achievement-categories.json", "achievement-groups.json", "achiev
 describe.skip("fetch-gw2-achievement-data integration", () => {
   it("should run the script and produce valid JSON files", async () => {
     // Run the script using node
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       exec(
         `node --loader ts-node/esm --require tsconfig-paths/register ${scriptPath}`,
         { env: { ...process.env, VITE_USE_GW2_CACHE: "false" } },
@@ -23,7 +23,7 @@ describe.skip("fetch-gw2-achievement-data integration", () => {
           if (error) {
             reject(new Error(stderr || stdout || error.message));
           } else {
-            resolve(undefined);
+            resolve();
           }
         }
       );
@@ -32,6 +32,7 @@ describe.skip("fetch-gw2-achievement-data integration", () => {
     // Check that each file exists and contains valid JSON
     for (const file of files) {
       const filePath = path.join(outputDir, file);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       const content = await fs.readFile(filePath, "utf-8");
       expect(() => JSON.parse(content)).not.toThrow();
     }
