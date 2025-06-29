@@ -147,36 +147,15 @@ async function batchFetch<T>(
   return results;
 }
 
-// Helper to determine if we should use cached data
-
-declare global {
-  interface GlobalThis {
-    __VITE_USE_GW2_CACHE__?: string;
-  }
-}
-
-function shouldUseGw2Cache(): boolean {
-  // Node.js (scripts)
-  if (typeof process !== "undefined" && process.env && process.env.VITE_USE_GW2_CACHE !== undefined) {
-    return process.env.VITE_USE_GW2_CACHE === "true";
-  }
-  // Vite/browser
-  if (typeof globalThis !== "undefined" && "__VITE_USE_GW2_CACHE__" in globalThis) {
-    return (globalThis as { __VITE_USE_GW2_CACHE__?: string }).__VITE_USE_GW2_CACHE__ === "true";
-  }
-  return (
-    typeof import.meta !== "undefined" &&
-    (import.meta as any).env &&
-    (import.meta as any).env.VITE_USE_GW2_CACHE === "true"
-  );
-}
-
 // Helper to fetch from public/data/*.json
 async function fetchCachedJson<T>(path: string): Promise<T> {
   try {
-    const res = await fetch(path);
+    // Use the new base URL for cached data
+    const baseUrl = "https://tadthewonderdog.github.io/gw2-coop/data/";
+    const url = baseUrl + path;
+    const res = await fetch(url);
     if (!res.ok) {
-      throw new GW2ApiError(`Failed to fetch cached data: ${path}`, res.status);
+      throw new GW2ApiError(`Failed to fetch cached data: ${url}`, res.status);
     }
     const data = (await res.json()) as T;
     return data;
@@ -186,10 +165,10 @@ async function fetchCachedJson<T>(path: string): Promise<T> {
   }
 }
 
-export async function getAchievementCategories(): Promise<AchievementCategory[]> {
-  if (shouldUseGw2Cache()) {
+export async function getAchievementCategories(useCache = false): Promise<AchievementCategory[]> {
+  if (useCache) {
     try {
-      return await fetchCachedJson<AchievementCategory[]>("/data/achievement-categories.json");
+      return await fetchCachedJson<AchievementCategory[]>("achievement-categories.json");
     } catch (err) {
       // If cache fails, proceed to live API, but if that also fails, the error will be thrown from there.
     }
@@ -228,10 +207,10 @@ export async function getAchievementCategories(): Promise<AchievementCategory[]>
   }
 }
 
-export async function getAchievements(ids?: number[]): Promise<Achievement[]> {
-  if (shouldUseGw2Cache() && !ids) {
+export async function getAchievements(ids?: number[], useCache = false): Promise<Achievement[]> {
+  if (useCache && !ids) {
     try {
-      return await fetchCachedJson<Achievement[]>("/data/achievements.json");
+      return await fetchCachedJson<Achievement[]>("achievements.json");
     } catch (err) {
       // If cache fails, proceed to live API, but if that also fails, the error will be thrown from there.
     }
@@ -326,10 +305,10 @@ export async function getUserProfile(apiKey: string): Promise<UserProfile> {
   }
 }
 
-export async function getAchievementGroups(): Promise<AchievementGroup[]> {
-  if (shouldUseGw2Cache()) {
+export async function getAchievementGroups(useCache = false): Promise<AchievementGroup[]> {
+  if (useCache) {
     try {
-      return await fetchCachedJson<AchievementGroup[]>("/data/achievement-groups.json");
+      return await fetchCachedJson<AchievementGroup[]>("achievement-groups.json");
     } catch (err) {
       // If cache fails, proceed to live API, but if that also fails, the error will be thrown from there.
     }

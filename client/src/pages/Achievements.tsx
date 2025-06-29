@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useCallback, lazy, Suspense } from "react";
+import { useEffect, useMemo, useRef, useCallback, lazy, Suspense, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Cloud, RefreshCw } from "lucide-react";
 
 import { AchievementsAccordionGroup } from "@/components/achievements/AchievementsAccordionGroup";
 import { ErrorState } from "@/components/achievements/ErrorState";
@@ -64,6 +65,8 @@ export default function Achievements() {
     setSelectedCategoryId,
     filters,
     sort,
+    useCache,
+    setUseCache,
   } = useAchievementsUIStore();
 
   // Get cached data and loading states
@@ -107,13 +110,22 @@ export default function Achievements() {
   const hasFetchedCategories = useRef(false);
   const hasFetchedGroups = useRef(false);
 
+  // Add a refresh state to trigger reloads
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Helper to clear in-memory caches (for refresh)
+  const { reset } = useAchievementsStore.getState();
+  const clearAchievementCaches = () => {
+    reset();
+  };
+
   const loadInitialData = useCallback(async () => {
     try {
       // Load groups if not cached, only once per key
       if (!hasFetchedGroups.current && !groups) {
         hasFetchedGroups.current = true;
         setLoadingGroups(true);
-        const groupsData = await getAchievementGroups();
+        const groupsData = await getAchievementGroups(useCache);
         setGroups(groupsData);
         setLoadingGroups(false);
       }
@@ -121,7 +133,7 @@ export default function Achievements() {
       if (!hasFetchedCategories.current && !categories) {
         hasFetchedCategories.current = true;
         setLoadingCategories(true);
-        const categoriesData = await getAchievementCategories();
+        const categoriesData = await getAchievementCategories(useCache);
         setCategories(categoriesData);
         setLoadingCategories(false);
       }
@@ -153,6 +165,7 @@ export default function Achievements() {
     setGroupsError,
     setCategoriesError,
     setAccountAchievementsError,
+    useCache,
   ]);
 
   useEffect(() => {
@@ -275,8 +288,39 @@ export default function Achievements() {
     });
   }, [selectedCategoryId, achievements, accountAchievementMap, filters, sort]);
 
+  // Add a handler for refresh
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    clearAchievementCaches();
+    hasFetchedGroups.current = false;
+    hasFetchedCategories.current = false;
+    hasFetchedAccountAchievements.current = false;
+    await loadInitialData();
+    setIsRefreshing(false);
+  };
+
   return (
     <>
+      {/* Top right controls - Hidden by default */}
+      <div className="hidden flex justify-end items-center gap-2 mb-2">
+        <button
+          type="button"
+          className={`p-2 rounded-full border transition-colors ${useCache ? "bg-blue-100 text-blue-600 border-blue-300" : "bg-background text-muted-foreground border-muted"}`}
+          title={useCache ? "Using cached data (click to use live)" : "Using live data (click to use cache)"}
+          onClick={() => setUseCache(!useCache)}
+        >
+          <Cloud className={useCache ? "fill-blue-400" : ""} size={22} />
+        </button>
+        <button
+          type="button"
+          className="p-2 rounded-full border bg-background text-muted-foreground border-muted transition-colors disabled:opacity-50"
+          title="Refresh achievement data"
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+        >
+          <RefreshCw className={isRefreshing ? "animate-spin" : ""} size={22} />
+        </button>
+      </div>
       {/* Current Party Card at the top */}
       {keys.length > 0 && <PartyCard apiKeys={keys} />}
       <div className="container mx-auto px-4 py-8 flex flex-col md:flex-row gap-8">
