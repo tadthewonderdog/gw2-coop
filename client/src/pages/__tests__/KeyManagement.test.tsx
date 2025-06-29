@@ -1,10 +1,7 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
-
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it, vi, beforeEach, type Mock } from "vitest";
 import { verifyApiKey } from "@/services/gw2-api";
 import { useAPIKeyStore } from "@/stores/api-keys";
-import type { APIKey } from "@/stores/api-keys";
-
 import KeyManagement from "../KeyManagement";
 
 // Mock the API key store
@@ -50,7 +47,9 @@ describe("KeyManagement", () => {
   it("shows empty state when no keys exist", () => {
     render(<KeyManagement />);
     expect(screen.getByText("No API keys added yet!")).toBeInTheDocument();
-    expect(screen.getByText("Add your first key using the button above to get started.")).toBeInTheDocument();
+    expect(
+      screen.getByText("Add your first key using the button above to get started.")
+    ).toBeInTheDocument();
   });
 
   it("shows key count badge", () => {

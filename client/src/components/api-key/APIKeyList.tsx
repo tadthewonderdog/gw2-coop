@@ -89,8 +89,16 @@ export function APIKeyList() {
   const [sortField, setSortField] = useState<SortField>("name");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const [filterText, setFilterText] = useState("");
-  const { keys, addKey, batchAddKeys, updateKey, removeKey, setCurrentKey, toggleSelected, currentKeyId } =
-    useAPIKeyStore();
+  const {
+    keys,
+    addKey,
+    batchAddKeys,
+    updateKey,
+    removeKey,
+    setCurrentKey,
+    toggleSelected,
+    currentKeyId,
+  } = useAPIKeyStore();
   const [refreshingKeyId, setRefreshingKeyId] = useState<string | null>(null);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [exportSuccess, setExportSuccess] = useState<string | null>(null);
@@ -283,20 +291,20 @@ export function APIKeyList() {
    */
   const handleImport = async () => {
     if (parsedImportKeys.length === 0) return;
-    
+
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const keysToAdd: APIKey[] = [];
       let skipped = 0;
-      
+
       for (const { name, key } of parsedImportKeys) {
         if (keys.some((k) => k.key === key)) {
           skipped++;
           continue;
         }
-        
+
         try {
           // Validate and fetch account info
           const accountInfo = await verifyApiKey(key);
@@ -308,7 +316,7 @@ export function APIKeyList() {
             isInvalid = true;
             characters = [];
           }
-          
+
           const newKey: APIKey = {
             id: crypto.randomUUID(),
             name,
@@ -337,15 +345,15 @@ export function APIKeyList() {
           keysToAdd.push(newKey);
         }
       }
-      
+
       // Add all keys in a single batch operation
       if (keysToAdd.length > 0) {
         batchAddKeys(keysToAdd);
       }
-      
+
       const imported = keysToAdd.length;
       const failed = parsedImportKeys.length - imported - skipped;
-      
+
       setIsImportDialogOpen(false);
       setImportJson("");
       setParsedImportKeys([]);
@@ -423,6 +431,93 @@ export function APIKeyList() {
           <p>No API keys added yet!</p>
           <p className="mt-2">Add your first key using the button above to get started.</p>
         </div>
+
+        {/* Add New Key Dialog */}
+        <APIKeyDialog
+          error={error}
+          isLoading={isLoading}
+          open={isAddDialogOpen}
+          onOpenChange={setIsAddDialogOpen}
+          onSubmit={handleSubmit}
+        />
+
+        {/* Import Dialog */}
+        <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+          <DialogContent className="bg-background border-border">
+            <DialogHeader>
+              <DialogTitle>Import API Keys</DialogTitle>
+              <DialogDescription>
+                Import your API key data from a JSON file or by pasting JSON below. Only the name and
+                key fields are required. Existing keys will be skipped.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-2">
+              <input
+                accept="application/json,.json"
+                className="block"
+                type="file"
+                onChange={handleImportFile}
+              />
+              <textarea
+                className="w-full min-h-[100px] rounded border border-border bg-muted p-2 text-xs font-mono"
+                placeholder="Paste exported API key JSON here..."
+                value={importJson}
+                onChange={(e) => setImportJson(e.target.value)}
+              />
+              {importFileError && <div className="text-destructive text-xs">{importFileError}</div>}
+              {parsedImportKeys.length > 0 && (
+                <div className="text-xs text-muted-foreground">
+                  <span className="font-semibold">{parsedImportKeys.length}</span> valid API key
+                  {parsedImportKeys.length !== 1 ? "s" : ""} detected.
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsImportDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                disabled={parsedImportKeys.length === 0 || !!importFileError || isLoading}
+                onClick={() => {
+                  void handleImport();
+                }}
+              >
+                {isLoading ? "Importing..." : "Import"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Success Toast */}
+        {exportSuccess && (
+          <div className="fixed bottom-4 right-4 z-50">
+            <div className="bg-green-600 text-white px-4 py-2 rounded shadow-lg animate-fade-in">
+              {exportSuccess}
+              <button
+                className="ml-4 text-white/80 hover:text-white text-xs underline"
+                onClick={() => setExportSuccess(null)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+
+        {error && (
+          <p className="text-sm text-destructive mt-2">
+            {error === "duplicate" ? (
+              <>
+                This API key is already added. Please use a different key or remove the existing one
+                first.
+              </>
+            ) : (
+              <>
+                Failed to add API key. Please make sure the key is valid and try again. If the problem
+                persists, please contact support.
+              </>
+            )}
+          </p>
+        )}
       </div>
     );
   }
@@ -513,14 +608,16 @@ export function APIKeyList() {
                     variant="ghost"
                     onClick={() => handleToggleSelected(key.id)}
                   >
-                    <Check className={cn("h-4 w-4", key.isSelected ? "opacity-100" : "opacity-50")} />
+                    <Check
+                      className={cn("h-4 w-4", key.isSelected ? "opacity-100" : "opacity-50")}
+                    />
                   </Button>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-foreground">{key.name}</span>
                     {key.isInvalid && (
-                      <Badge variant="destructive" className="text-xs">
+                      <Badge className="text-xs" variant="destructive">
                         Invalid
                       </Badge>
                     )}
