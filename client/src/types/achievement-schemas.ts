@@ -50,7 +50,7 @@ export const AchievementSchema = z.object({
   tiers: z
     .array(
       z.object({
-        count: z.number().int().positive("Tier count must be a positive integer"),
+        count: z.number().int().min(0, "Tier count must be zero or greater"),
         points: z.number().int().min(0, "Tier points must be non-negative"),
       })
     )
@@ -68,7 +68,7 @@ export const AchievementSchema = z.object({
   prerequisites: z
     .array(z.number().positive("Prerequisite ID must be a positive number"))
     .optional(),
-  point_cap: z.number().int().min(0, "Point cap must be non-negative").optional(),
+  point_cap: z.number().int().optional(),
   category: z.number().positive("Category ID must be a positive number").optional(),
   points: z.number().int().min(0, "Points must be non-negative").optional(),
 });

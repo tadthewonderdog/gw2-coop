@@ -13,7 +13,7 @@ let AchievementGroupSchema: z.ZodTypeAny,
   AchievementSchema: z.ZodTypeAny;
 try {
   ({ AchievementGroupSchema, AchievementCategorySchema, AchievementSchema } = await import(
-    "../services/gw2-api.js"
+    "../services/gw2-api.ts"
   ));
 } catch (importErr) {
   console.error("[SCRIPT] Failed to import schemas:", importErr);

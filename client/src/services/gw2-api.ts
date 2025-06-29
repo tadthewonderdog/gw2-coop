@@ -6,13 +6,13 @@ import {
   AchievementSchema,
   AccountAchievementSchema,
   AchievementGroupSchema,
-} from "../types/achievement-schemas";
+} from "../types/achievement-schemas.ts";
 import type {
   Achievement,
   AchievementCategory,
   AccountAchievement,
   AchievementGroup,
-} from "../types/achievements";
+} from "../types/achievements.ts";
 
 // Re-export schemas and types for use by other modules
 export {
@@ -156,13 +156,18 @@ declare global {
 }
 
 function shouldUseGw2Cache(): boolean {
+  // Node.js (scripts)
+  if (typeof process !== "undefined" && process.env && process.env.VITE_USE_GW2_CACHE !== undefined) {
+    return process.env.VITE_USE_GW2_CACHE === "true";
+  }
+  // Vite/browser
   if (typeof globalThis !== "undefined" && "__VITE_USE_GW2_CACHE__" in globalThis) {
     return (globalThis as { __VITE_USE_GW2_CACHE__?: string }).__VITE_USE_GW2_CACHE__ === "true";
   }
   return (
     typeof import.meta !== "undefined" &&
-    import.meta.env &&
-    import.meta.env.VITE_USE_GW2_CACHE === "true"
+    (import.meta as any).env &&
+    (import.meta as any).env.VITE_USE_GW2_CACHE === "true"
   );
 }
 
