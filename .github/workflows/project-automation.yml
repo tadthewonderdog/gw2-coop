@@ -13,14 +13,14 @@ permissions:
   pull-requests: write
 
 jobs:
-  add-to-project:
+  add-to-project:          
     name: Add to Project Board
     runs-on: ubuntu-latest
     if: github.repository_owner == 'tadthewonderdog' # Only run in your org
     steps:
       - name: Add item to project
-        uses: actions/add-to-project@v1 # v1.0.2 (hash pinned)
+        uses: actions/add-to-project@v1.0.2
         with:
-          project-url: https://github.com/users/tadthewonderdog/projects/1/
+          project-url: https://github.com/users/tadthewonderdog/projects/2/
           github-token: ${{ secrets.GITHUB_TOKEN }} # Use built-in token instead of PAT
           labeled: bug,enhancement,documentation # Only add items with these labels
