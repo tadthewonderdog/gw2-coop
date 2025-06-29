@@ -76,24 +76,29 @@ function isImportedApiKey(obj: unknown): obj is ImportedApiKey {
   );
 }
 
-interface APIKeyListProps {
-  onAddKey: () => void;
-}
-
 /**
  * Main API Key management component that displays a table of API keys
  * with filtering, sorting, and management capabilities.
  */
-export function APIKeyList({ onAddKey }: APIKeyListProps) {
+export function APIKeyList() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editingKey, setEditingKey] = useState<string | null>(null);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [deleteConfirmKey, setDeleteConfirmKey] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>("name");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const [filterText, setFilterText] = useState("");
-  const { keys, addKey, updateKey, removeKey, setCurrentKey, toggleSelected, currentKeyId } =
-    useAPIKeyStore();
+  const {
+    keys,
+    addKey,
+    batchAddKeys,
+    updateKey,
+    removeKey,
+    setCurrentKey,
+    toggleSelected,
+    currentKeyId,
+  } = useAPIKeyStore();
   const [refreshingKeyId, setRefreshingKeyId] = useState<string | null>(null);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [exportSuccess, setExportSuccess] = useState<string | null>(null);
@@ -125,6 +130,7 @@ export function APIKeyList({ onAddKey }: APIKeyListProps) {
     } finally {
       setIsLoading(false);
       setEditingKey(null);
+      setIsAddDialogOpen(false);
     }
   };
 
@@ -201,99 +207,77 @@ export function APIKeyList({ onAddKey }: APIKeyListProps) {
       if (a.id === currentKeyId) return -1;
       if (b.id === currentKeyId) return 1;
 
-      // Then selected
+      // Selected keys come next
       if (a.isSelected && !b.isSelected) return -1;
       if (!a.isSelected && b.isSelected) return 1;
 
-      // Then sort by the selected field
-      const aValue = a[sortField].toLowerCase();
-      const bValue = b[sortField].toLowerCase();
-
-      if (sortDirection === "asc") {
-        return aValue.localeCompare(bValue);
-      } else {
-        return bValue.localeCompare(aValue);
-      }
+      // Then apply sorting
+      const aValue = a[sortField];
+      const bValue = b[sortField];
+      const comparison = aValue.localeCompare(bValue);
+      return sortDirection === "asc" ? comparison : -comparison;
     });
-  }, [keys, currentKeyId, sortField, sortDirection, filterText]);
+  }, [keys, filterText, sortField, sortDirection, currentKeyId]);
 
-  // Prepare export data: only name and key fields for security
-  const exportData = useMemo(() => keys.map(({ name, key }) => ({ name, key })), [keys]);
+  const exportData = useMemo(() => {
+    return keys.map(({ name, key }) => ({ name, key }));
+  }, [keys]);
 
-  /**
-   * Copies API key data to clipboard as JSON
-   */
   const handleCopyExport = async () => {
     try {
       await navigator.clipboard.writeText(JSON.stringify(exportData, null, 2));
-      setExportSuccess("Copied to clipboard!");
-      setIsExportDialogOpen(false);
-    } catch {
+      setExportSuccess("API keys copied to clipboard!");
+    } catch (err) {
       setExportSuccess("Failed to copy to clipboard.");
     }
   };
 
-  /**
-   * Downloads API key data as a JSON file
-   */
   const handleDownloadExport = () => {
-    try {
-      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `gw2-api-keys-export.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      setExportSuccess("Download started!");
-      setIsExportDialogOpen(false);
-    } catch {
-      setExportSuccess("Failed to start download.");
-    }
+    const dataStr = JSON.stringify(exportData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "gw2-api-keys.json";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    setExportSuccess("API keys downloaded!");
   };
 
-  /**
-   * Handles file upload for import functionality
-   */
   const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
     const reader = new FileReader();
     reader.onload = (event) => {
-      try {
-        const text = event.target?.result as string;
-        setImportJson(text);
-        setImportFileError(null);
-      } catch {
-        setImportFileError("Failed to read file.");
-      }
+      const content = event.target?.result as string;
+      setImportJson(content);
     };
-    reader.onerror = () => setImportFileError("Failed to read file.");
     reader.readAsText(file);
   };
 
-  /**
-   * Parses and validates import JSON, extracting valid API key objects
-   */
+  // Parse import JSON whenever it changes
   React.useEffect(() => {
-    if (!importJson) {
+    if (!importJson.trim()) {
       setParsedImportKeys([]);
       setImportFileError(null);
       return;
     }
+
     try {
-      const data = JSON.parse(importJson) as unknown;
-      if (Array.isArray(data)) {
-        const keys: ImportedApiKey[] = data.filter(isImportedApiKey);
-        setParsedImportKeys(keys);
-        setImportFileError(
-          keys.length === data.length ? null : "Some items are invalid and will be ignored."
-        );
+      const parsed = JSON.parse(importJson);
+      if (Array.isArray(parsed)) {
+        const validKeys = parsed.filter(isImportedApiKey);
+        setParsedImportKeys(validKeys);
+        setImportFileError(validKeys.length === 0 ? "No valid API keys found." : null);
+      } else if (isImportedApiKey(parsed)) {
+        setParsedImportKeys([parsed]);
+        setImportFileError(null);
       } else {
         setParsedImportKeys([]);
-        setImportFileError("Invalid JSON format: expected an array.");
+        setImportFileError("Invalid JSON format.");
       }
     } catch {
       setParsedImportKeys([]);
@@ -307,64 +291,83 @@ export function APIKeyList({ onAddKey }: APIKeyListProps) {
    */
   const handleImport = async () => {
     if (parsedImportKeys.length === 0) return;
-    let imported = 0;
-    let skipped = 0;
-    let failed = 0;
-    for (const { name, key } of parsedImportKeys) {
-      if (keys.some((k) => k.key === key)) {
-        skipped++;
-        continue;
-      }
-      try {
-        // Validate and fetch account info
-        const accountInfo = await verifyApiKey(key);
-        let characters: CharacterInfo[] = [];
-        let isInvalid = false;
-        try {
-          characters = await getCharacters(key);
-        } catch (err) {
-          isInvalid = true;
-          characters = [];
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const keysToAdd: APIKey[] = [];
+      let skipped = 0;
+
+      for (const { name, key } of parsedImportKeys) {
+        if (keys.some((k) => k.key === key)) {
+          skipped++;
+          continue;
         }
-        const newKey = {
-          id: crypto.randomUUID(),
-          name,
-          key,
-          accountId: accountInfo.id,
-          accountName: accountInfo.name,
-          permissions: accountInfo.access || [],
-          isSelected: false,
-          isInvalid,
-          characters,
-        };
-        await Promise.resolve(addKey(newKey));
-        imported++;
-      } catch {
-        // If validation fails, add as invalid
-        const newKey = {
-          id: crypto.randomUUID(),
-          name,
-          key,
-          accountId: "",
-          accountName: "",
-          permissions: [],
-          isSelected: false,
-          isInvalid: true,
-          characters: [],
-        };
-        await Promise.resolve(addKey(newKey));
-        failed++;
+
+        try {
+          // Validate and fetch account info
+          const accountInfo = await verifyApiKey(key);
+          let characters: CharacterInfo[] = [];
+          let isInvalid = false;
+          try {
+            characters = await getCharacters(key);
+          } catch (err) {
+            isInvalid = true;
+            characters = [];
+          }
+
+          const newKey: APIKey = {
+            id: crypto.randomUUID(),
+            name,
+            key,
+            accountId: accountInfo.id,
+            accountName: accountInfo.name,
+            permissions: accountInfo.access || [],
+            isSelected: false,
+            isInvalid,
+            characters,
+          };
+          keysToAdd.push(newKey);
+        } catch {
+          // If validation fails, add as invalid
+          const newKey: APIKey = {
+            id: crypto.randomUUID(),
+            name,
+            key,
+            accountId: "",
+            accountName: "",
+            permissions: [],
+            isSelected: false,
+            isInvalid: true,
+            characters: [],
+          };
+          keysToAdd.push(newKey);
+        }
       }
+
+      // Add all keys in a single batch operation
+      if (keysToAdd.length > 0) {
+        batchAddKeys(keysToAdd);
+      }
+
+      const imported = keysToAdd.length;
+      const failed = parsedImportKeys.length - imported - skipped;
+
+      setIsImportDialogOpen(false);
+      setImportJson("");
+      setParsedImportKeys([]);
+      setImportFileError(null);
+      setExportSuccess(
+        `Imported ${imported} key${imported !== 1 ? "s" : ""}.` +
+          (skipped ? ` Skipped ${skipped} duplicate${skipped !== 1 ? "s" : ""}.` : "") +
+          (failed ? ` ${failed} failed to import.` : "")
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to import API keys");
+    } finally {
+      setIsLoading(false);
     }
-    setIsImportDialogOpen(false);
-    setImportJson("");
-    setParsedImportKeys([]);
-    setImportFileError(null);
-    setExportSuccess(
-      `Imported ${imported} key${imported !== 1 ? "s" : ""}.` +
-        (skipped ? ` Skipped ${skipped} duplicate${skipped !== 1 ? "s" : ""}.` : "") +
-        (failed ? ` ${failed} failed to import.` : "")
-    );
   };
 
   // Always render the Add New Key button and filter input
@@ -392,7 +395,7 @@ export function APIKeyList({ onAddKey }: APIKeyListProps) {
             "transform hover:scale-105 transition-all"
           )}
           disabled={keys.length >= 50}
-          onClick={onAddKey}
+          onClick={() => setIsAddDialogOpen(true)}
         >
           <Plus className="h-4 w-4 mr-2" />
           Add New Key
@@ -428,6 +431,93 @@ export function APIKeyList({ onAddKey }: APIKeyListProps) {
           <p>No API keys added yet!</p>
           <p className="mt-2">Add your first key using the button above to get started.</p>
         </div>
+
+        {/* Add New Key Dialog */}
+        <APIKeyDialog
+          error={error}
+          isLoading={isLoading}
+          open={isAddDialogOpen}
+          onOpenChange={setIsAddDialogOpen}
+          onSubmit={handleSubmit}
+        />
+
+        {/* Import Dialog */}
+        <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+          <DialogContent className="bg-background border-border">
+            <DialogHeader>
+              <DialogTitle>Import API Keys</DialogTitle>
+              <DialogDescription>
+                Import your API key data from a JSON file or by pasting JSON below. Only the name
+                and key fields are required. Existing keys will be skipped.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-2">
+              <input
+                accept="application/json,.json"
+                className="block"
+                type="file"
+                onChange={handleImportFile}
+              />
+              <textarea
+                className="w-full min-h-[100px] rounded border border-border bg-muted p-2 text-xs font-mono"
+                placeholder="Paste exported API key JSON here..."
+                value={importJson}
+                onChange={(e) => setImportJson(e.target.value)}
+              />
+              {importFileError && <div className="text-destructive text-xs">{importFileError}</div>}
+              {parsedImportKeys.length > 0 && (
+                <div className="text-xs text-muted-foreground">
+                  <span className="font-semibold">{parsedImportKeys.length}</span> valid API key
+                  {parsedImportKeys.length !== 1 ? "s" : ""} detected.
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsImportDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                disabled={parsedImportKeys.length === 0 || !!importFileError || isLoading}
+                onClick={() => {
+                  void handleImport();
+                }}
+              >
+                {isLoading ? "Importing..." : "Import"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Success Toast */}
+        {exportSuccess && (
+          <div className="fixed bottom-4 right-4 z-50">
+            <div className="bg-green-600 text-white px-4 py-2 rounded shadow-lg animate-fade-in">
+              {exportSuccess}
+              <button
+                className="ml-4 text-white/80 hover:text-white text-xs underline"
+                onClick={() => setExportSuccess(null)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+
+        {error && (
+          <p className="text-sm text-destructive mt-2">
+            {error === "duplicate" ? (
+              <>
+                This API key is already added. Please use a different key or remove the existing one
+                first.
+              </>
+            ) : (
+              <>
+                Failed to add API key. Please make sure the key is valid and try again. If the
+                problem persists, please contact support.
+              </>
+            )}
+          </p>
+        )}
       </div>
     );
   }
@@ -498,79 +588,70 @@ export function APIKeyList({ onAddKey }: APIKeyListProps) {
                     variant="ghost"
                     onClick={() => handleSetCurrent(key.id)}
                   >
-                    <Check
-                      className={cn(
-                        "h-4 w-4",
-                        currentKeyId === key.id ? "opacity-100" : "opacity-0 hover:opacity-50"
-                      )}
-                    />
+                    {currentKeyId === key.id ? (
+                      <Star className="h-4 w-4 fill-current" />
+                    ) : (
+                      <Star className="h-4 w-4" />
+                    )}
                   </Button>
                 </TableCell>
                 <TableCell className="text-center">
                   <Button
-                    className="h-8 w-8 p-0 hover:bg-muted"
+                    className={cn(
+                      "h-8 w-8 p-0 hover:bg-muted",
+                      key.isSelected
+                        ? "text-primary"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
                     size="sm"
-                    title={key.isSelected ? "Remove from selected" : "Add to selected"}
+                    title={key.isSelected ? "Selected" : "Select key"}
                     variant="ghost"
                     onClick={() => handleToggleSelected(key.id)}
                   >
-                    <Star
-                      className={cn(
-                        "h-4 w-4",
-                        key.isSelected ? "fill-primary text-primary" : "text-muted-foreground"
-                      )}
+                    <Check
+                      className={cn("h-4 w-4", key.isSelected ? "opacity-100" : "opacity-50")}
                     />
                   </Button>
                 </TableCell>
                 <TableCell>
-                  <span data-testid={`key-name-${key.id}`}>{key.name}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-foreground">{key.name}</span>
+                    {key.isInvalid && (
+                      <Badge className="text-xs" variant="destructive">
+                        Invalid
+                      </Badge>
+                    )}
+                  </div>
                 </TableCell>
-                <TableCell>{key.accountName}</TableCell>
-                <TableCell className="min-w-0 w-auto">
-                  <div className="flex flex-row flex-nowrap gap-1 items-center min-h-[2rem] min-w-0 w-auto">
-                    {Array.isArray(key.characters) &&
-                      (() => {
-                        const filtered = key.characters.filter((char) =>
-                          !filterText
-                            ? true
-                            : char.name.toLowerCase().includes(filterText.toLowerCase())
-                        );
-                        if (filterText) {
-                          // Show all matching characters if filter is applied
-                          return filtered.map((char) => (
-                            <Badge
-                              key={char.name}
-                              className={`mb-0 ${characterPillClass}`}
-                              variant="secondary"
-                            >
-                              {char.name}
-                            </Badge>
-                          ));
-                        } else {
-                          // Limit to 2, show '+N more' if needed
-                          const maxToShow = 2;
-                          const shown = filtered.slice(0, maxToShow);
-                          const extra = filtered.length - maxToShow;
-                          return (
-                            <React.Fragment>
-                              {shown.map((char) => (
-                                <Badge
-                                  key={char.name}
-                                  className={`mb-0 ${characterPillClass}`}
-                                  variant="secondary"
-                                >
-                                  {char.name}
-                                </Badge>
-                              ))}
-                              {extra > 0 && (
-                                <Badge className={`mb-0 ${characterPillClass}`} variant="outline">
-                                  +{extra} more
-                                </Badge>
-                              )}
-                            </React.Fragment>
-                          );
-                        }
-                      })()}
+                <TableCell>
+                  <span className="text-muted-foreground">{key.accountName}</span>
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-wrap gap-1">
+                    {Array.isArray(key.characters) && key.characters.length > 0 ? (
+                      key.characters.slice(0, 3).map((character) => (
+                        <span
+                          key={character.name}
+                          className={cn(
+                            characterPillClass,
+                            "px-2 py-1 rounded-full",
+                            "text-xs font-medium",
+                            "bg-muted text-muted-foreground",
+                            "border border-border"
+                          )}
+                          title={character.name}
+                        >
+                          {character.name}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-xs text-muted-foreground">No characters</span>
+                    )}
+                    {Array.isArray(key.characters) && key.characters.length > 3 && (
+                      <span className="text-xs text-muted-foreground">
+                        +{key.characters.length - 3} more
+                      </span>
+                    )}
                   </div>
                 </TableCell>
                 <TableCell className="text-center">
@@ -628,6 +709,16 @@ export function APIKeyList({ onAddKey }: APIKeyListProps) {
         </Table>
       </div>
 
+      {/* Add New Key Dialog */}
+      <APIKeyDialog
+        error={error}
+        isLoading={isLoading}
+        open={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+        onSubmit={handleSubmit}
+      />
+
+      {/* Edit Key Dialog */}
       <APIKeyDialog
         error={error}
         initialData={editingKey ? keys.find((k) => k.id === editingKey) : undefined}
@@ -749,12 +840,12 @@ export function APIKeyList({ onAddKey }: APIKeyListProps) {
               Cancel
             </Button>
             <Button
-              disabled={parsedImportKeys.length === 0 || !!importFileError}
+              disabled={parsedImportKeys.length === 0 || !!importFileError || isLoading}
               onClick={() => {
                 void handleImport();
               }}
             >
-              Import
+              {isLoading ? "Importing..." : "Import"}
             </Button>
           </DialogFooter>
         </DialogContent>

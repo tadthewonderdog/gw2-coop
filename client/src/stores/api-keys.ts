@@ -22,6 +22,7 @@ interface APIKeyStore {
   keys: APIKey[];
   currentKeyId: string | null;
   addKey: (key: APIKey) => void;
+  batchAddKeys: (keys: APIKey[]) => void;
   updateKey: (id: string, key: Partial<APIKey>) => void;
   removeKey: (id: string) => void;
   getKey: (id: string) => APIKey | undefined;
@@ -54,6 +55,22 @@ export const useAPIKeyStore = create<APIKeyStore>()(
           // If this is the first key, set it as current
           currentKeyId: state.keys.length === 0 ? key.id : state.currentKeyId,
         })),
+      batchAddKeys: (newKeys) =>
+        set((state) => {
+          const processedKeys = newKeys.map((key) => ({
+            ...key,
+            isSelected: key.isSelected ?? false,
+            isInvalid: key.isInvalid ?? false,
+            characters: key.characters ?? [],
+          }));
+
+          return {
+            keys: [...state.keys, ...processedKeys],
+            // If this is the first time adding keys, set the first one as current
+            currentKeyId:
+              state.keys.length === 0 ? processedKeys[0]?.id || null : state.currentKeyId,
+          };
+        }),
       updateKey: (id, key) =>
         set((state) => ({
           keys: state.keys.map((k) => (k.id === id ? { ...k, ...key } : k)),

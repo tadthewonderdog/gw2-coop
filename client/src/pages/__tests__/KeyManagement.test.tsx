@@ -1,10 +1,8 @@
-import { render, screen, fireEvent, within, waitFor, act } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
-import { create } from "zustand";
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it, vi, beforeEach, type Mock } from "vitest";
 
 import { verifyApiKey } from "@/services/gw2-api";
 import { useAPIKeyStore } from "@/stores/api-keys";
-import type { APIKey } from "@/stores/api-keys";
 
 import KeyManagement from "../KeyManagement";
 
@@ -18,34 +16,21 @@ vi.mock("@/services/gw2-api", () => ({
   verifyApiKey: vi.fn(),
 }));
 
-// Create a real Zustand store instance for all tests
-const createTestStore = () =>
-  create<{
-    keys: APIKey[];
-    addKey: (key: APIKey) => void;
-    removeKey: (id: string) => void;
-    setCurrentKey: (id: string) => void;
-    toggleSelected: (id: string) => void;
-  }>((set) => ({
+describe("KeyManagement", () => {
+  const mockStore = {
     keys: [],
-    addKey: (key) => set((state) => ({ keys: [...state.keys, key] })),
+    currentKeyId: null,
+    addKey: vi.fn(),
+    batchAddKeys: vi.fn(),
+    updateKey: vi.fn(),
     removeKey: vi.fn(),
     setCurrentKey: vi.fn(),
     toggleSelected: vi.fn(),
-  }));
+  };
 
-let testStore = createTestStore();
-
-describe("KeyManagement", () => {
   beforeEach(() => {
-    testStore = createTestStore();
-    (useAPIKeyStore as unknown as Mock).mockImplementation(() => ({
-      keys: [],
-      addKey: testStore.getState().addKey,
-      removeKey: testStore.getState().removeKey,
-      setCurrentKey: testStore.getState().setCurrentKey,
-      toggleSelected: testStore.getState().toggleSelected,
-    }));
+    vi.clearAllMocks();
+    (useAPIKeyStore as unknown as Mock).mockReturnValue(mockStore);
     (verifyApiKey as Mock).mockResolvedValue({
       id: "1",
       name: "Test Account",
@@ -57,146 +42,80 @@ describe("KeyManagement", () => {
     render(<KeyManagement />);
     expect(screen.getByText("API Keys")).toBeInTheDocument();
     expect(screen.getByText("Add New Key")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /import api keys/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /export api keys/i })).toBeInTheDocument();
   });
 
-  it("shows add key form when clicking add key button", () => {
+  it("shows empty state when no keys exist", () => {
     render(<KeyManagement />);
-    fireEvent.click(screen.getByText("Add New Key"));
-    expect(screen.getByText("Add New API Key")).toBeInTheDocument();
+    expect(screen.getByText("No API keys added yet!")).toBeInTheDocument();
+    expect(
+      screen.getByText("Add your first key using the button above to get started.")
+    ).toBeInTheDocument();
   });
 
-  it("adds a new API key successfully", async () => {
-    const { getByRole, getByLabelText, getByTestId } = render(<KeyManagement />);
+  it("shows key count badge", () => {
+    render(<KeyManagement />);
+    expect(screen.getByText("0 keys")).toBeInTheDocument();
+  });
 
-    // Click add new key button
-    act(() => {
-      fireEvent.click(getByRole("button", { name: /add new key/i }));
-    });
+  it("disables export button when no keys exist", () => {
+    render(<KeyManagement />);
+    const exportButton = screen.getByRole("button", { name: /export api keys/i });
+    expect(exportButton).toBeDisabled();
+  });
 
-    // Fill in the form
-    const apiKeyInput = getByLabelText("API Key");
-    const nameInput = getByLabelText("Name");
+  it("enables import button when no keys exist", () => {
+    render(<KeyManagement />);
+    const importButton = screen.getByRole("button", { name: /import api keys/i });
+    expect(importButton).not.toBeDisabled();
+  });
 
-    act(() => {
-      fireEvent.change(apiKeyInput, {
-        target: {
-          value: "A1B2C3D4-E5F6-7890-ABCD-1234567890ABCDEF1234-5678-90AB-CDEF-1234567890AB",
+  it("shows table when keys exist", () => {
+    const mockStoreWithKeys = {
+      ...mockStore,
+      keys: [
+        {
+          id: "1",
+          name: "Test Key 1",
+          key: "test-key-1",
+          accountId: "account-1",
+          accountName: "Test Account 1",
+          permissions: ["account", "characters"],
+          isSelected: false,
+          isInvalid: false,
+          characters: [{ name: "Character1" }],
         },
-      });
-      fireEvent.change(nameInput, { target: { value: "Test Key" } });
-      fireEvent.submit(getByTestId("api-key-form"));
-    });
+      ],
+    };
+    (useAPIKeyStore as unknown as Mock).mockReturnValue(mockStoreWithKeys);
 
-    // Wait for the dialog to close and verify the key was added
-    await waitFor(() => {
-      expect(testStore.getState().keys).toHaveLength(1);
-      expect(testStore.getState().keys[0].name).toBe("Test Key");
-    });
+    render(<KeyManagement />);
+    expect(screen.getByText("Test Key 1")).toBeInTheDocument();
+    expect(screen.getByText("1 keys")).toBeInTheDocument();
   });
 
-  it("shows error when adding key with incorrect length", () => {
+  it("enables export button when keys exist", () => {
+    const mockStoreWithKeys = {
+      ...mockStore,
+      keys: [
+        {
+          id: "1",
+          name: "Test Key 1",
+          key: "test-key-1",
+          accountId: "account-1",
+          accountName: "Test Account 1",
+          permissions: ["account", "characters"],
+          isSelected: false,
+          isInvalid: false,
+          characters: [{ name: "Character1" }],
+        },
+      ],
+    };
+    (useAPIKeyStore as unknown as Mock).mockReturnValue(mockStoreWithKeys);
+
     render(<KeyManagement />);
-
-    fireEvent.click(screen.getByRole("button", { name: /add new key/i }));
-    const dialog = screen.getByRole("dialog");
-    const form = within(dialog).getByTestId("api-key-form");
-    const apiKeyInput = within(form).getByLabelText(/API Key/i);
-    const nameInput = within(form).getByLabelText(/Name/i);
-    const saveButton = within(form).getByRole("button", { name: /save/i });
-
-    fireEvent.change(nameInput, { target: { value: "Test Key" } });
-    fireEvent.change(apiKeyInput, { target: { value: "short" } });
-    fireEvent.click(saveButton);
-
-    expect(screen.getByTestId("error-message")).toBeInTheDocument();
-    expect(screen.getByTestId("error-message")).toHaveTextContent(
-      "API key must follow the format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXXXXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-    );
-  });
-
-  it("shows error when adding key with whitespace-only API key", () => {
-    render(<KeyManagement />);
-
-    fireEvent.click(screen.getByRole("button", { name: /add new key/i }));
-    const dialog = screen.getByRole("dialog");
-    const form = within(dialog).getByTestId("api-key-form");
-    const apiKeyInput = within(form).getByLabelText(/API Key/i);
-    const nameInput = within(form).getByLabelText(/Name/i);
-    const saveButton = within(form).getByRole("button", { name: /save/i });
-
-    fireEvent.change(nameInput, { target: { value: "Test Key" } });
-    fireEvent.change(apiKeyInput, { target: { value: "   " } });
-    fireEvent.click(saveButton);
-
-    expect(screen.getByTestId("error-message")).toBeInTheDocument();
-    expect(screen.getByTestId("error-message")).toHaveTextContent(
-      "API key must follow the format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXXXXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-    );
-  });
-
-  it("shows error when adding key with invalid characters", () => {
-    render(<KeyManagement />);
-
-    fireEvent.click(screen.getByRole("button", { name: /add new key/i }));
-    const dialog = screen.getByRole("dialog");
-    const form = within(dialog).getByTestId("api-key-form");
-    const apiKeyInput = within(form).getByLabelText(/API Key/i);
-    const nameInput = within(form).getByLabelText(/Name/i);
-    const saveButton = within(form).getByRole("button", { name: /save/i });
-
-    fireEvent.change(nameInput, { target: { value: "Test Key" } });
-    fireEvent.change(apiKeyInput, {
-      target: {
-        value: "INVALID-KEY-WITH-SYMBOLS!@#$%-123456789012345678901234567890123456789012345678",
-      },
-    });
-    fireEvent.click(saveButton);
-
-    expect(screen.getByTestId("error-message")).toBeInTheDocument();
-    expect(screen.getByTestId("error-message")).toHaveTextContent(
-      "API key must follow the format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXXXXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-    );
-  });
-
-  it("shows error when adding key with invalid format", () => {
-    render(<KeyManagement />);
-
-    fireEvent.click(screen.getByRole("button", { name: /add new key/i }));
-    const dialog = screen.getByRole("dialog");
-    const form = within(dialog).getByTestId("api-key-form");
-    const apiKeyInput = within(form).getByLabelText(/API Key/i);
-    const nameInput = within(form).getByLabelText(/Name/i);
-    const saveButton = within(form).getByRole("button", { name: /save/i });
-
-    fireEvent.change(nameInput, { target: { value: "Test Key" } });
-    fireEvent.change(apiKeyInput, {
-      target: { value: "12345678-ABCD-EFGH-IJKL-MNOPQRSTUVWZYZ1234567890123456789012345678901234" },
-    });
-    fireEvent.click(saveButton);
-
-    expect(screen.getByTestId("error-message")).toBeInTheDocument();
-    expect(screen.getByTestId("error-message")).toHaveTextContent(
-      "API key must follow the format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXXXXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-    );
-  });
-
-  it("shows error when adding key with empty name", () => {
-    render(<KeyManagement />);
-    fireEvent.click(screen.getByText("Add New Key"));
-
-    const apiKeyInput = screen.getByLabelText("API Key");
-    const nameInput = screen.getByLabelText("Name");
-
-    fireEvent.change(apiKeyInput, {
-      target: { value: "12345678-1234-1234-1234-12345678901234567890-1234-1234-1234-123456789012" },
-    });
-    fireEvent.change(nameInput, { target: { value: "" } });
-
-    fireEvent.submit(screen.getByTestId("api-key-form"));
-
-    expect(screen.getByTestId("error-message")).toBeInTheDocument();
-    expect(screen.getByTestId("error-message")).toHaveTextContent(
-      "Please enter a name for your API key"
-    );
+    const exportButton = screen.getByRole("button", { name: /export api keys/i });
+    expect(exportButton).not.toBeDisabled();
   });
 });

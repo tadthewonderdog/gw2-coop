@@ -3,7 +3,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
 import { useAPIKeyStore } from "@/stores/api-keys";
@@ -44,6 +45,7 @@ describe("APIKeyList", () => {
   const mockStore = {
     keys: mockKeys,
     addKey: vi.fn(),
+    batchAddKeys: vi.fn(),
     updateKey: vi.fn(),
     removeKey: vi.fn(),
     setCurrentKey: vi.fn(),
@@ -66,7 +68,7 @@ describe("APIKeyList", () => {
         currentKeyId: null,
       });
 
-      render(<APIKeyList onAddKey={() => {}} />);
+      render(<APIKeyList />);
 
       const addButton = screen.getByRole("button", { name: /add new key/i });
       expect(addButton).toBeInTheDocument();
@@ -74,7 +76,7 @@ describe("APIKeyList", () => {
     });
 
     it("shows Add New Key button when there are keys", () => {
-      render(<APIKeyList onAddKey={() => {}} />);
+      render(<APIKeyList />);
 
       const addButton = screen.getByRole("button", { name: /add new key/i });
       expect(addButton).toBeInTheDocument();
@@ -82,12 +84,12 @@ describe("APIKeyList", () => {
     });
 
     it("shows key count badge", () => {
-      render(<APIKeyList onAddKey={() => {}} />);
+      render(<APIKeyList />);
       expect(screen.getByText("2 keys")).toBeInTheDocument();
     });
 
     it("shows export and import buttons", () => {
-      render(<APIKeyList onAddKey={() => {}} />);
+      render(<APIKeyList />);
 
       const exportButton = screen.getByRole("button", { name: /export api keys/i });
       const importButton = screen.getByRole("button", { name: /import api keys/i });
@@ -104,10 +106,64 @@ describe("APIKeyList", () => {
         currentKeyId: null,
       });
 
-      render(<APIKeyList onAddKey={() => {}} />);
+      render(<APIKeyList />);
 
       const exportButton = screen.getByRole("button", { name: /export api keys/i });
       expect(exportButton).toBeDisabled();
+    });
+
+    it("opens Add New Key dialog when button is clicked (empty state)", async () => {
+      const mockUseAPIKeyStore = useAPIKeyStore as any;
+      mockUseAPIKeyStore.mockReturnValue({
+        ...mockStore,
+        keys: [],
+        currentKeyId: null,
+      });
+
+      render(<APIKeyList />);
+      const addButton = screen.getByRole("button", { name: /add new key/i });
+      await userEvent.click(addButton);
+      const dialog = await screen.findByRole("dialog");
+      expect(dialog).toBeInTheDocument();
+      // Check for the API key input by label within the dialog
+      expect(within(dialog).getByLabelText(/api key/i)).toBeInTheDocument();
+    });
+
+    it("opens Import dialog when button is clicked (empty state)", async () => {
+      const mockUseAPIKeyStore = useAPIKeyStore as any;
+      mockUseAPIKeyStore.mockReturnValue({
+        ...mockStore,
+        keys: [],
+        currentKeyId: null,
+      });
+
+      render(<APIKeyList />);
+      const importButton = screen.getByRole("button", { name: /import api keys/i });
+      await userEvent.click(importButton);
+      const dialog = await screen.findByRole("dialog");
+      expect(dialog).toBeInTheDocument();
+      // Check for textarea in import dialog
+      expect(screen.getByPlaceholderText(/paste exported api key json here/i)).toBeInTheDocument();
+    });
+
+    it("opens Add New Key dialog when button is clicked (with keys)", async () => {
+      render(<APIKeyList />);
+      const addButton = screen.getByRole("button", { name: /add new key/i });
+      await userEvent.click(addButton);
+      const dialog = await screen.findByRole("dialog");
+      expect(dialog).toBeInTheDocument();
+      expect(within(dialog).getByLabelText(/api key/i)).toBeInTheDocument();
+    });
+
+    it("opens Import dialog when button is clicked (with keys)", async () => {
+      render(<APIKeyList />);
+      const importButton = screen.getByRole("button", { name: /import api keys/i });
+      await userEvent.click(importButton);
+      const dialog = await screen.findByRole("dialog");
+      expect(dialog).toBeInTheDocument();
+      expect(
+        within(dialog).getByPlaceholderText(/paste exported api key json here/i)
+      ).toBeInTheDocument();
     });
   });
 });
