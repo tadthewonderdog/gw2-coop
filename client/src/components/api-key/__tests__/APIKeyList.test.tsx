@@ -44,6 +44,7 @@ describe("APIKeyList", () => {
   const mockStore = {
     keys: mockKeys,
     addKey: vi.fn(),
+    batchAddKeys: vi.fn(),
     updateKey: vi.fn(),
     removeKey: vi.fn(),
     setCurrentKey: vi.fn(),
@@ -66,7 +67,7 @@ describe("APIKeyList", () => {
         currentKeyId: null,
       });
 
-      render(<APIKeyList onAddKey={() => {}} />);
+      render(<APIKeyList />);
 
       const addButton = screen.getByRole("button", { name: /add new key/i });
       expect(addButton).toBeInTheDocument();
@@ -74,7 +75,7 @@ describe("APIKeyList", () => {
     });
 
     it("shows Add New Key button when there are keys", () => {
-      render(<APIKeyList onAddKey={() => {}} />);
+      render(<APIKeyList />);
 
       const addButton = screen.getByRole("button", { name: /add new key/i });
       expect(addButton).toBeInTheDocument();
@@ -82,12 +83,12 @@ describe("APIKeyList", () => {
     });
 
     it("shows key count badge", () => {
-      render(<APIKeyList onAddKey={() => {}} />);
+      render(<APIKeyList />);
       expect(screen.getByText("2 keys")).toBeInTheDocument();
     });
 
     it("shows export and import buttons", () => {
-      render(<APIKeyList onAddKey={() => {}} />);
+      render(<APIKeyList />);
 
       const exportButton = screen.getByRole("button", { name: /export api keys/i });
       const importButton = screen.getByRole("button", { name: /import api keys/i });
@@ -104,7 +105,7 @@ describe("APIKeyList", () => {
         currentKeyId: null,
       });
 
-      render(<APIKeyList onAddKey={() => {}} />);
+      render(<APIKeyList />);
 
       const exportButton = screen.getByRole("button", { name: /export api keys/i });
       expect(exportButton).toBeDisabled();
