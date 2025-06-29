@@ -5119,10 +5119,7 @@
       },
       {
         "id": 3167,
-        "flags": [
-          "SpecialEvent",
-          "PvE"
-        ]
+        "flags": ["SpecialEvent", "PvE"]
       },
       {
         "id": 3930
@@ -5146,10 +5143,7 @@
       },
       {
         "id": 3167,
-        "flags": [
-          "SpecialEvent",
-          "PvE"
-        ]
+        "flags": ["SpecialEvent", "PvE"]
       },
       {
         "id": 3927
@@ -5485,161 +5479,109 @@
     "achievements": [
       {
         "id": 1262,
-        "flags": [
-          "SpecialEvent"
-        ]
+        "flags": ["SpecialEvent"]
       },
       {
         "id": 1264,
-        "flags": [
-          "SpecialEvent"
-        ]
+        "flags": ["SpecialEvent"]
       },
       {
         "id": 1265,
-        "flags": [
-          "SpecialEvent"
-        ]
+        "flags": ["SpecialEvent"]
       },
       {
         "id": 2789,
-        "flags": [
-          "SpecialEvent"
-        ]
+        "flags": ["SpecialEvent"]
       },
       {
         "id": 3245,
-        "flags": [
-          "SpecialEvent"
-        ]
+        "flags": ["SpecialEvent"]
       },
       {
         "id": 3263,
-        "flags": [
-          "SpecialEvent"
-        ]
+        "flags": ["SpecialEvent"]
       },
       {
         "id": 5067,
-        "flags": [
-          "SpecialEvent"
-        ]
+        "flags": ["SpecialEvent"]
       },
       {
         "id": 5068,
-        "flags": [
-          "SpecialEvent"
-        ]
+        "flags": ["SpecialEvent"]
       },
       {
         "id": 5070,
-        "flags": [
-          "SpecialEvent"
-        ]
+        "flags": ["SpecialEvent"]
       },
       {
         "id": 5071,
-        "flags": [
-          "SpecialEvent"
-        ]
+        "flags": ["SpecialEvent"]
       },
       {
         "id": 5073,
-        "flags": [
-          "SpecialEvent"
-        ]
+        "flags": ["SpecialEvent"]
       },
       {
         "id": 5075,
-        "flags": [
-          "SpecialEvent"
-        ]
+        "flags": ["SpecialEvent"]
       },
       {
         "id": 6820,
-        "flags": [
-          "SpecialEvent"
-        ]
+        "flags": ["SpecialEvent"]
       }
     ],
     "tomorrow": [
       {
         "id": 1261,
-        "flags": [
-          "SpecialEvent"
-        ]
+        "flags": ["SpecialEvent"]
       },
       {
         "id": 1265,
-        "flags": [
-          "SpecialEvent"
-        ]
+        "flags": ["SpecialEvent"]
       },
       {
         "id": 2789,
-        "flags": [
-          "SpecialEvent"
-        ]
+        "flags": ["SpecialEvent"]
       },
       {
         "id": 3253,
-        "flags": [
-          "SpecialEvent"
-        ]
+        "flags": ["SpecialEvent"]
       },
       {
         "id": 3263,
-        "flags": [
-          "SpecialEvent"
-        ]
+        "flags": ["SpecialEvent"]
       },
       {
         "id": 3271,
-        "flags": [
-          "SpecialEvent"
-        ]
+        "flags": ["SpecialEvent"]
       },
       {
         "id": 5067,
-        "flags": [
-          "SpecialEvent"
-        ]
+        "flags": ["SpecialEvent"]
       },
       {
         "id": 5068,
-        "flags": [
-          "SpecialEvent"
-        ]
+        "flags": ["SpecialEvent"]
       },
       {
         "id": 5070,
-        "flags": [
-          "SpecialEvent"
-        ]
+        "flags": ["SpecialEvent"]
       },
       {
         "id": 5071,
-        "flags": [
-          "SpecialEvent"
-        ]
+        "flags": ["SpecialEvent"]
       },
       {
         "id": 5073,
-        "flags": [
-          "SpecialEvent"
-        ]
+        "flags": ["SpecialEvent"]
       },
       {
         "id": 5075,
-        "flags": [
-          "SpecialEvent"
-        ]
+        "flags": ["SpecialEvent"]
       },
       {
         "id": 6820,
-        "flags": [
-          "SpecialEvent"
-        ]
+        "flags": ["SpecialEvent"]
       }
     ]
   },
@@ -8664,103 +8606,61 @@
     "achievements": [
       {
         "id": 2848,
-        "flags": [
-          "SpecialEvent",
-          "PvE"
-        ]
+        "flags": ["SpecialEvent", "PvE"]
       },
       {
         "id": 2851,
-        "flags": [
-          "SpecialEvent",
-          "PvE"
-        ]
+        "flags": ["SpecialEvent", "PvE"]
       },
       {
         "id": 2873,
-        "flags": [
-          "SpecialEvent",
-          "PvE"
-        ]
+        "flags": ["SpecialEvent", "PvE"]
       },
       {
         "id": 2888,
-        "flags": [
-          "SpecialEvent",
-          "PvE"
-        ]
+        "flags": ["SpecialEvent", "PvE"]
       },
       {
         "id": 5680,
-        "flags": [
-          "SpecialEvent",
-          "PvE"
-        ]
+        "flags": ["SpecialEvent", "PvE"]
       },
       {
         "id": 5685,
-        "flags": [
-          "SpecialEvent",
-          "PvE"
-        ]
+        "flags": ["SpecialEvent", "PvE"]
       },
       {
         "id": 6519,
-        "flags": [
-          "SpecialEvent",
-          "PvE"
-        ]
+        "flags": ["SpecialEvent", "PvE"]
       }
     ],
     "tomorrow": [
       {
         "id": 2853,
-        "flags": [
-          "SpecialEvent",
-          "PvE"
-        ]
+        "flags": ["SpecialEvent", "PvE"]
       },
       {
         "id": 2855,
-        "flags": [
-          "SpecialEvent",
-          "PvE"
-        ]
+        "flags": ["SpecialEvent", "PvE"]
       },
       {
         "id": 2866,
-        "flags": [
-          "SpecialEvent",
-          "PvE"
-        ]
+        "flags": ["SpecialEvent", "PvE"]
       },
       {
         "id": 2877,
-        "flags": [
-          "SpecialEvent",
-          "PvE"
-        ]
+        "flags": ["SpecialEvent", "PvE"]
       },
       {
         "id": 2888,
-        "flags": [
-          "SpecialEvent",
-          "PvE"
-        ]
+        "flags": ["SpecialEvent", "PvE"]
       },
       {
         "id": 5684,
-        "flags": [
-          "SpecialEvent",
-          "PvE"
-        ]
+        "flags": ["SpecialEvent", "PvE"]
       },
       {
         "id": 6519,
-        "flags": [
-          "SpecialEvent",
-          "PvE"
-        ]
+        "flags": ["SpecialEvent", "PvE"]
       }
     ]
   },

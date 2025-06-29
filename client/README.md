@@ -101,27 +101,32 @@ src/
 ## 🏆 Features
 
 ### Achievement Data Caching
+
 - Toggle with `VITE_USE_GW2_CACHE`.
 - Cached data in `public/data/*.json`.
 - Falls back to live API if cache fails.
 - Refresh cache: `npm run fetch-achievement-data`.
 
 ### API Key Management
+
 - Multiple keys (up to 50), real-time validation, character display, filtering, selection, import/export, duplicate handling, and robust error handling.
 - All data stored locally (no server transmission).
 
 ### UI/UX & Accessibility
+
 - Mobile-first, responsive design.
 - Accessible components (Radix, Shadcn).
 - Consistent theming (dark/light).
 - Optimized images (WebP, lazy loading).
 
 ### Error Handling & Validation
+
 - Early returns, guard clauses, and custom error types.
 - Zod for all schema validation.
 - Error boundaries for robust UX.
 
 ### Performance
+
 - Dynamic imports, code splitting, memoization.
 - Responsive, fast, and optimized for bundle size.
 
@@ -136,6 +141,7 @@ src/
 5. All PRs are tracked on the [Project Board](https://github.com/users/tadthewonderdog/projects/1/).
 
 ### Code Style & Best Practices
+
 - Functional, modular TypeScript (no classes).
 - Descriptive variable names (e.g., `isLoading`, `hasError`).
 - Avoid files >200-300 lines; refactor as needed.
