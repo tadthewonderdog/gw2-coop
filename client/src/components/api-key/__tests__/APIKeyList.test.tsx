@@ -161,7 +161,9 @@ describe("APIKeyList", () => {
       await userEvent.click(importButton);
       const dialog = await screen.findByRole("dialog");
       expect(dialog).toBeInTheDocument();
-      expect(within(dialog).getByPlaceholderText(/paste exported api key json here/i)).toBeInTheDocument();
+      expect(
+        within(dialog).getByPlaceholderText(/paste exported api key json here/i)
+      ).toBeInTheDocument();
     });
   });
 });

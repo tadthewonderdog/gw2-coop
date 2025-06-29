@@ -447,8 +447,8 @@ export function APIKeyList() {
             <DialogHeader>
               <DialogTitle>Import API Keys</DialogTitle>
               <DialogDescription>
-                Import your API key data from a JSON file or by pasting JSON below. Only the name and
-                key fields are required. Existing keys will be skipped.
+                Import your API key data from a JSON file or by pasting JSON below. Only the name
+                and key fields are required. Existing keys will be skipped.
               </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-2">
@@ -512,8 +512,8 @@ export function APIKeyList() {
               </>
             ) : (
               <>
-                Failed to add API key. Please make sure the key is valid and try again. If the problem
-                persists, please contact support.
+                Failed to add API key. Please make sure the key is valid and try again. If the
+                problem persists, please contact support.
               </>
             )}
           </p>
