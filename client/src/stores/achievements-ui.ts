@@ -23,6 +23,8 @@ interface AchievementsUIState {
   };
   /** Sort order for the achievement list (persisted) */
   sort: "alphabetical" | "percentComplete";
+  /** Whether to use cached achievement data (persisted) */
+  useCache: boolean;
   /** Set expanded group IDs */
   setExpandedGroups: (ids: string[]) => void;
   /** Set expanded category IDs */
@@ -45,6 +47,8 @@ interface AchievementsUIState {
   setRewardTypes: (types: string[]) => void;
   /** Reset filters */
   resetFilters: () => void;
+  /** Set useCache */
+  setUseCache: (use: boolean) => void;
 }
 
 export const useAchievementsUIStore = create<AchievementsUIState>()(
@@ -61,6 +65,7 @@ export const useAchievementsUIStore = create<AchievementsUIState>()(
         rewardTypes: [],
       },
       sort: "alphabetical",
+      useCache: true,
       setExpandedGroups: (ids) => set({ expandedGroups: ids }),
       setExpandedCategories: (ids) => set({ expandedCategories: ids }),
       setSelectedGroupId: (id) => set({ selectedGroupId: id }),
@@ -92,6 +97,7 @@ export const useAchievementsUIStore = create<AchievementsUIState>()(
             rewardTypes: [],
           },
         }),
+      setUseCache: (use) => set({ useCache: use }),
     }),
     {
       name: "gw2-achievements-ui",
@@ -106,6 +112,7 @@ export const useAchievementsUIStore = create<AchievementsUIState>()(
           rewardTypes: state.filters.rewardTypes,
         },
         sort: state.sort,
+        useCache: state.useCache,
       }),
     }
   )

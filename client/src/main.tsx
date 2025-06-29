@@ -12,10 +12,11 @@ import "./index.css";
 const basename: string = import.meta.env.VITE_BASE_PATH || "/";
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-const rootElement: HTMLElement | null = document.getElementById("root");
-if (!(rootElement instanceof HTMLElement)) {
+const el = document.getElementById("root");
+if (!el || !(el instanceof HTMLElement)) {
   throw new Error("Root element not found");
 }
+const rootElement: HTMLElement = el;
 
 createRoot(rootElement).render(
   <StrictMode>
