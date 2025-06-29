@@ -1,6 +1,6 @@
+import { Cloud, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useRef, useCallback, lazy, Suspense, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Cloud, RefreshCw } from "lucide-react";
 
 import { AchievementsAccordionGroup } from "@/components/achievements/AchievementsAccordionGroup";
 import { ErrorState } from "@/components/achievements/ErrorState";
@@ -304,19 +304,25 @@ export default function Achievements() {
       {/* Top right controls - Hidden by default */}
       <div className="hidden flex justify-end items-center gap-2 mb-2">
         <button
-          type="button"
           className={`p-2 rounded-full border transition-colors ${useCache ? "bg-blue-100 text-blue-600 border-blue-300" : "bg-background text-muted-foreground border-muted"}`}
-          title={useCache ? "Using cached data (click to use live)" : "Using live data (click to use cache)"}
+          title={
+            useCache
+              ? "Using cached data (click to use live)"
+              : "Using live data (click to use cache)"
+          }
+          type="button"
           onClick={() => setUseCache(!useCache)}
         >
           <Cloud className={useCache ? "fill-blue-400" : ""} size={22} />
         </button>
         <button
-          type="button"
           className="p-2 rounded-full border bg-background text-muted-foreground border-muted transition-colors disabled:opacity-50"
-          title="Refresh achievement data"
-          onClick={handleRefresh}
           disabled={isRefreshing}
+          title="Refresh achievement data"
+          type="button"
+          onClick={() => {
+            void handleRefresh();
+          }}
         >
           <RefreshCw className={isRefreshing ? "animate-spin" : ""} size={22} />
         </button>
