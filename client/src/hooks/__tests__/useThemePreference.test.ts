@@ -19,12 +19,8 @@ const createMockMediaQuery = (matches: boolean) => ({
 const matchMediaMock = vi.fn();
 
 describe("useThemePreference", () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  let originalLocalStorage: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  let originalMatchMedia: any;
+  let originalLocalStorage: Storage | undefined;
+  let originalMatchMedia: typeof window.matchMedia | undefined;
 
   beforeEach(() => {
     // Reset mocks

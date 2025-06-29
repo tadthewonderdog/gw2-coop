@@ -82,12 +82,11 @@ describe("Progress", () => {
   });
 
   it("handles null value", () => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     render(
       <Progress
         value={
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          null as any
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          null as unknown as number
         }
       />
     );
@@ -136,9 +135,8 @@ describe("Progress", () => {
     render(
       <Progress
         value={
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          "75" as any
+          "75" as unknown as number
         }
       />
     );
@@ -151,9 +149,8 @@ describe("Progress", () => {
     render(
       <Progress
         value={
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          true as any
+          true as unknown as number
         }
       />
     );
@@ -166,9 +163,8 @@ describe("Progress", () => {
     render(
       <Progress
         value={
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          false as any
+          false as unknown as number
         }
       />
     );
@@ -181,9 +177,8 @@ describe("Progress", () => {
     render(
       <Progress
         value={
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          [25] as any
+          [25] as unknown as number
         }
       />
     );
@@ -196,9 +191,8 @@ describe("Progress", () => {
     render(
       <Progress
         value={
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          { value: 50 } as any
+          { value: 50 } as unknown as number
         }
       />
     );
