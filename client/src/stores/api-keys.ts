@@ -63,11 +63,12 @@ export const useAPIKeyStore = create<APIKeyStore>()(
             isInvalid: key.isInvalid ?? false,
             characters: key.characters ?? [],
           }));
-          
+
           return {
             keys: [...state.keys, ...processedKeys],
             // If this is the first time adding keys, set the first one as current
-            currentKeyId: state.keys.length === 0 ? processedKeys[0]?.id || null : state.currentKeyId,
+            currentKeyId:
+              state.keys.length === 0 ? processedKeys[0]?.id || null : state.currentKeyId,
           };
         }),
       updateKey: (id, key) =>
