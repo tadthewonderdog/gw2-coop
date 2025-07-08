@@ -16,6 +16,7 @@ module.exports = {
     "plugin:import/recommended",
     "plugin:import/typescript",
     "plugin:prettier/recommended",
+    "plugin:storybook/recommended"
   ],
   ignorePatterns: ["dist", "coverage", ".eslintrc.cjs", "vite.config.ts", "src/scripts/**"],
   parser: "@typescript-eslint/parser",
