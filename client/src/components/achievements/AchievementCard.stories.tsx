@@ -1,14 +1,16 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { AchievementCard } from './AchievementCard';
-import type { Achievement, AccountAchievement } from '@/types/achievements';
+import type { Meta, StoryObj } from "@storybook/react-vite";
+
+import type { Achievement, AccountAchievement } from "@/types/achievements";
+
+import { AchievementCard } from "./AchievementCard";
 
 const mockAchievement: Achievement = {
   id: 101,
-  name: 'Defeat the Dragon',
-  description: 'Slay the legendary dragon in the mountains.',
-  icon: '',
+  name: "Defeat the Dragon",
+  description: "Slay the legendary dragon in the mountains.",
+  icon: "",
   points: 10,
-  type: 'Combat',
+  type: "Combat",
   flags: [],
 };
 
@@ -22,12 +24,12 @@ const completedAccount: AccountAchievement = {
 const lockedAchievement: Achievement = {
   ...mockAchievement,
   id: 102,
-  name: 'Secret Achievement',
-  flags: ['RequiresUnlock'],
+  name: "Secret Achievement",
+  flags: ["RequiresUnlock"],
 };
 
 const meta: Meta<typeof AchievementCard> = {
-  title: 'Achievements/DetailCard',
+  title: "Achievements/DetailCard",
   component: AchievementCard,
 };
 export default meta;
@@ -53,4 +55,4 @@ export const Locked: Story = {
     achievement: lockedAchievement,
     accountAchievement: undefined,
   },
-}; 
+};

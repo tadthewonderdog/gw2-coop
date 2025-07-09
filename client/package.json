@@ -18,6 +18,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "validate": "npm run lint && npm run format:check && npm run type-check",
+    "validate:prepush": "npm run test:full && npm run validate",
     "analyze:css": "npx tailwindcss -i ./src/index.css -o ./dist/output.css --minify && npx gzip-size ./dist/output.css",
     "analyze:bundle": "npm run build && npx vite-bundle-analyzer dist",
     "fetch:gw2-achievement-data": "node --loader ts-node/esm --require tsconfig-paths/register src/scripts/fetch-gw2-achievement-data.ts",

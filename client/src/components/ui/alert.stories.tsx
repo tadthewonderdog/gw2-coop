@@ -1,16 +1,17 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { Alert } from './alert';
+import type { Meta, StoryObj } from "@storybook/react-vite";
+
+import { Alert } from "./alert";
 
 const meta: Meta<typeof Alert> = {
-  title: 'UI/Alert',
+  title: "UI/Alert",
   component: Alert,
   args: {
-    children: 'This is an alert!',
+    children: "This is an alert!",
   },
-  tags: ['autodocs'],
+  tags: ["autodocs"],
 };
 export default meta;
 
 type Story = StoryObj<typeof Alert>;
 
-export const Default: Story = {}; 
+export const Default: Story = {};

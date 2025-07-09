@@ -18,7 +18,7 @@ module.exports = {
     "plugin:prettier/recommended",
     "plugin:storybook/recommended"
   ],
-  ignorePatterns: ["dist", "coverage", ".eslintrc.cjs", "vite.config.ts", "src/scripts/**"],
+  ignorePatterns: ["dist", "coverage", ".eslintrc.cjs", "vite.config.ts", "src/scripts/**", "storybook-static/**", "vitest.*.config.ts", "vitest.shims.d.ts"],
   parser: "@typescript-eslint/parser",
   parserOptions: {
     project: ["./tsconfig.app.json", "./tsconfig.node.json"],

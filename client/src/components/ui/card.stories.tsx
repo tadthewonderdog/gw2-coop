@@ -1,10 +1,11 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { Card, CardHeader, CardContent, CardTitle } from './card';
+import type { Meta, StoryObj } from "@storybook/react-vite";
+
+import { Card, CardHeader, CardContent, CardTitle } from "./card";
 
 const meta: Meta<typeof Card> = {
-  title: 'UI/Card',
+  title: "UI/Card",
   component: Card,
-  tags: ['autodocs'],
+  tags: ["autodocs"],
 };
 export default meta;
 
@@ -16,9 +17,7 @@ export const Default: Story = {
       <CardHeader>
         <CardTitle>Card Title</CardTitle>
       </CardHeader>
-      <CardContent>
-        This is the card content.
-      </CardContent>
+      <CardContent>This is the card content.</CardContent>
     </Card>
   ),
-}; 
+};

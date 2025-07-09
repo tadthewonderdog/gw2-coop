@@ -1,7 +1,7 @@
 export function createMockMatchMedia(matches: boolean = false): MediaQueryList {
   return {
     matches,
-    media: '',
+    media: "",
     onchange: null,
     addListener: () => {},
     removeListener: () => {},
@@ -9,4 +9,4 @@ export function createMockMatchMedia(matches: boolean = false): MediaQueryList {
     removeEventListener: () => {},
     dispatchEvent: () => false,
   } as MediaQueryList;
-} 
+}

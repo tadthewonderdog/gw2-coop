@@ -1,13 +1,20 @@
-import { useState } from 'react';
-import { AchievementsAccordionGroup } from './AchievementsAccordionGroup';
-import { AchievementCard } from './AchievementCard';
-import type { AchievementGroup, AchievementCategory, Achievement, AccountAchievement } from '@/types/achievements';
+import { useState } from "react";
+
+import type {
+  AchievementGroup,
+  AchievementCategory,
+  Achievement,
+  AccountAchievement,
+} from "@/types/achievements";
+
+import { AchievementCard } from "./AchievementCard";
+import { AchievementsAccordionGroup } from "./AchievementsAccordionGroup";
 
 const mockGroups: AchievementGroup[] = [
   {
-    id: '1',
-    name: 'Group 1',
-    icon: '',
+    id: "1",
+    name: "Group 1",
+    icon: "",
     order: 1,
     categories: [1, 2],
   },
@@ -16,15 +23,15 @@ const mockGroups: AchievementGroup[] = [
 const mockCategories: AchievementCategory[] = [
   {
     id: 1,
-    name: 'Category 1',
-    icon: '',
+    name: "Category 1",
+    icon: "",
     order: 1,
     achievements: [101, 102],
   },
   {
     id: 2,
-    name: 'Category 2',
-    icon: '',
+    name: "Category 2",
+    icon: "",
     order: 2,
     achievements: [103],
   },
@@ -33,29 +40,29 @@ const mockCategories: AchievementCategory[] = [
 const mockAchievements: Achievement[] = [
   {
     id: 101,
-    name: 'Defeat the Dragon',
-    description: 'Slay the legendary dragon in the mountains.',
-    icon: '',
+    name: "Defeat the Dragon",
+    description: "Slay the legendary dragon in the mountains.",
+    icon: "",
     points: 10,
-    type: 'Combat',
+    type: "Combat",
     flags: [],
   },
   {
     id: 102,
-    name: 'Secret Achievement',
-    description: 'Find the hidden cave.',
-    icon: '',
+    name: "Secret Achievement",
+    description: "Find the hidden cave.",
+    icon: "",
     points: 5,
-    type: 'Exploration',
-    flags: ['RequiresUnlock'],
+    type: "Exploration",
+    flags: ["RequiresUnlock"],
   },
   {
     id: 103,
-    name: 'Speed Runner',
-    description: 'Complete the dungeon in under 10 minutes.',
-    icon: '',
+    name: "Speed Runner",
+    description: "Complete the dungeon in under 10 minutes.",
+    icon: "",
     points: 15,
-    type: 'Challenge',
+    type: "Challenge",
     flags: [],
   },
 ];
@@ -67,42 +74,43 @@ const mockAccountAchievements: AccountAchievement[] = [
 ];
 
 export default {
-  title: 'Achievements/MasterDetail',
+  title: "Achievements/MasterDetail",
 };
 
 export const MasterDetail = () => {
-  const [selectedGroupId, setSelectedGroupId] = useState<string | null>('1');
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>("1");
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(1);
 
   // Filter achievements for selected category
   const currentCategory = mockCategories.find((cat) => cat.id === selectedCategoryId);
-  const achievementIds = currentCategory?.achievements.map((a) => (typeof a === 'number' ? a : a.id)) || [];
+  const achievementIds =
+    currentCategory?.achievements.map((a) => (typeof a === "number" ? a : a.id)) || [];
   const currentAchievements = mockAchievements.filter((a) => achievementIds.includes(a.id));
 
   return (
-    <div style={{ display: 'flex', gap: 24 }}>
+    <div style={{ display: "flex", gap: 24 }}>
       <div style={{ width: 320 }}>
         <AchievementsAccordionGroup
-          groups={mockGroups}
           categories={mockCategories}
-          selectedGroupId={selectedGroupId}
+          groups={mockGroups}
           selectedCategoryId={selectedCategoryId}
-          onSelectGroup={setSelectedGroupId}
+          selectedGroupId={selectedGroupId}
           onSelectCategory={(catId, groupId) => {
             setSelectedGroupId(groupId);
             setSelectedCategoryId(catId);
           }}
+          onSelectGroup={setSelectedGroupId}
         />
       </div>
       <div style={{ flex: 1 }}>
         {currentAchievements.map((achievement) => (
           <AchievementCard
             key={achievement.id}
-            achievement={achievement}
             accountAchievement={mockAccountAchievements.find((aa) => aa.id === achievement.id)}
+            achievement={achievement}
           />
         ))}
       </div>
     </div>
   );
-}; 
+};
