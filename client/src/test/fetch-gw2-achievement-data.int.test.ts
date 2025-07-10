@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { exec } from "child_process";
 import { promises as fs } from "fs";
 import path from "path";
@@ -32,8 +33,7 @@ describe.skip("fetch-gw2-achievement-data integration", () => {
     // Check that each file exists and contains valid JSON
     for (const file of files) {
       const filePath = path.join(outputDir, file);
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      const content = await fs.readFile(filePath, "utf-8");
+      const content = await fs.readFile(filePath, "utf-8"); // eslint-disable-line @typescript-eslint/no-unsafe-return
       expect(() => JSON.parse(content)).not.toThrow();
     }
   }, 120_000); // Allow up to 2 minutes for network
