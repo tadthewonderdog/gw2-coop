@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { HelmetProvider } from "react-helmet-async";
@@ -11,8 +12,7 @@ import "./index.css";
 // Get the base path from environment variable, defaulting to "/"
 const basename: string = import.meta.env.VITE_BASE_PATH || "/";
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-const el = document.getElementById("root");
+const el = document.getElementById("root"); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
 if (!el || !(el instanceof HTMLElement)) {
   throw new Error("Root element not found");
 }

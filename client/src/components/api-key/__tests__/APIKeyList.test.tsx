@@ -5,6 +5,7 @@
 
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { act } from "react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
 import { useAPIKeyStore } from "@/stores/api-keys";
@@ -122,7 +123,9 @@ describe("APIKeyList", () => {
 
       render(<APIKeyList />);
       const addButton = screen.getByRole("button", { name: /add new key/i });
-      await userEvent.click(addButton);
+      await act(async () => {
+        await userEvent.click(addButton);
+      });
       const dialog = await screen.findByRole("dialog");
       expect(dialog).toBeInTheDocument();
       // Check for the API key input by label within the dialog
@@ -139,7 +142,9 @@ describe("APIKeyList", () => {
 
       render(<APIKeyList />);
       const importButton = screen.getByRole("button", { name: /import api keys/i });
-      await userEvent.click(importButton);
+      await act(async () => {
+        await userEvent.click(importButton);
+      });
       const dialog = await screen.findByRole("dialog");
       expect(dialog).toBeInTheDocument();
       // Check for textarea in import dialog
@@ -149,7 +154,9 @@ describe("APIKeyList", () => {
     it("opens Add New Key dialog when button is clicked (with keys)", async () => {
       render(<APIKeyList />);
       const addButton = screen.getByRole("button", { name: /add new key/i });
-      await userEvent.click(addButton);
+      await act(async () => {
+        await userEvent.click(addButton);
+      });
       const dialog = await screen.findByRole("dialog");
       expect(dialog).toBeInTheDocument();
       expect(within(dialog).getByLabelText(/api key/i)).toBeInTheDocument();
@@ -158,7 +165,9 @@ describe("APIKeyList", () => {
     it("opens Import dialog when button is clicked (with keys)", async () => {
       render(<APIKeyList />);
       const importButton = screen.getByRole("button", { name: /import api keys/i });
-      await userEvent.click(importButton);
+      await act(async () => {
+        await userEvent.click(importButton);
+      });
       const dialog = await screen.findByRole("dialog");
       expect(dialog).toBeInTheDocument();
       expect(
