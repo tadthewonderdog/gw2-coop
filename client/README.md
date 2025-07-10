@@ -138,7 +138,7 @@ src/
 2. Follow code style and best practices (see below).
 3. Run all validation: `npm run validate`.
 4. Submit a pull request (use templates).
-5. All PRs are tracked on the [Project Board](https://github.com/users/tadthewonderdog/projects/1/).
+5. All PRs are tracked on the [Project Board](https://github.com/users/tadthewonderdog/projects/2/).
 
 ### Code Style & Best Practices
 
@@ -195,7 +195,7 @@ MIT
 
 ## 🏁 Maintainers & Project Management
 
-- [Project Board](https://github.com/users/tadthewonderdog/projects/1/)
+- [Project Board](https://github.com/users/tadthewonderdog/projects/2/)
 - Issues and PRs are tracked and managed via GitHub Projects.
 
 ---
