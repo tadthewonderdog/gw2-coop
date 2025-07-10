@@ -4,8 +4,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 
 import { render, screen, within } from "@testing-library/react";
-import { act } from "react";
 import userEvent from "@testing-library/user-event";
+import { act } from "react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
 import { useAPIKeyStore } from "@/stores/api-keys";

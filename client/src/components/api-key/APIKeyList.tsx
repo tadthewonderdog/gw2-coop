@@ -267,9 +267,9 @@ export function APIKeyList() {
     }
 
     try {
-      const parsed = JSON.parse(importJson);
+      const parsed = JSON.parse(importJson) as unknown;
       if (Array.isArray(parsed)) {
-        const validKeys = parsed.filter(isImportedApiKey);
+        const validKeys = (parsed as unknown[]).filter(isImportedApiKey);
         setParsedImportKeys(validKeys);
         setImportFileError(validKeys.length === 0 ? "No valid API keys found." : null);
       } else if (isImportedApiKey(parsed)) {
