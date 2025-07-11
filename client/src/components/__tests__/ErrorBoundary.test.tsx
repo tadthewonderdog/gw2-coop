@@ -104,9 +104,10 @@ describe("ErrorBoundary", () => {
 
   it("reloads page when refresh button is clicked", () => {
     const originalLocation = window.location;
-    // @ts-expect-error - Mocking console.error
+    // @ts-expect-error - Mocking window.location
     delete window.location;
-    window.location = { ...originalLocation, reload: vi.fn() };
+    // @ts-expect-error - Mocking window.location for testing
+    window.location = { ...originalLocation, reload: vi.fn() } as Location;
     render(
       <ErrorBoundary>
         <ThrowError />
@@ -115,6 +116,7 @@ describe("ErrorBoundary", () => {
     const refreshButton = screen.getByRole("button", { name: /refresh page/i });
     fireEvent.click(refreshButton);
     expect(window.location.reload).toHaveBeenCalledTimes(1);
+    // @ts-expect-error - Restoring window.location
     window.location = originalLocation;
   });
 
