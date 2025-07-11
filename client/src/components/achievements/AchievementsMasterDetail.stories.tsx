@@ -77,7 +77,8 @@ export default {
   title: "Achievements/MasterDetail",
 };
 
-export const MasterDetail = () => {
+// Create a wrapper component to handle state
+const MasterDetailWrapper = () => {
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>("1");
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(1);
 
@@ -114,3 +115,5 @@ export const MasterDetail = () => {
     </div>
   );
 };
+
+export const MasterDetail = () => <MasterDetailWrapper />;

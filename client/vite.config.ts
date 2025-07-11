@@ -50,4 +50,17 @@ export default defineConfig({
     strictPort: true,
     host: true,
   },
+  optimizeDeps: {
+    include: [
+      "react",
+      "react-dom",
+      "react/jsx-dev-runtime",
+      "react-router-dom",
+      "@storybook/react",
+      "@storybook/addon-a11y",
+      "@storybook/addon-docs",
+      "@storybook/addon-vitest",
+      "markdown-to-jsx"
+    ]
+  }
 });
