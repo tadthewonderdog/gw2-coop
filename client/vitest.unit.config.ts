@@ -9,6 +9,16 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
+    // Add exclude patterns to prevent discovering tests from unwanted directories
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/cypress/**',
+      '**/.{idea,git,cache,output,temp}/**',
+      '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*',
+      '**/*.stories.{js,jsx,ts,tsx}',
+      '**/*.config.{js,jsx,ts,tsx}',
+    ],
     coverage: {
       reporter: ['text', 'json', 'html'],
       exclude: [
