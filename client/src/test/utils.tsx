@@ -30,7 +30,7 @@ export const mockSessionStorage = (key: string, value: string) => {
   window.sessionStorage.setItem(key, value);
 };
 
-export function renderWithThemeProvider(ui: ReactNode) {
+export function renderWithThemeProvider(ui: ReactNode): ReturnType<typeof render> {
   return render(
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       {ui}
