@@ -1,4 +1,7 @@
 import type { Preview } from "@storybook/react-vite";
+import React from "react";
+import { ErrorBoundary } from "../src/stories/ErrorBoundary";
+import '../src/index.css';
 
 const preview: Preview = {
   parameters: {
@@ -16,6 +19,15 @@ const preview: Preview = {
       test: "todo",
     },
   },
+  decorators: [
+    (Story) => (
+      <ErrorBoundary>
+        <React.StrictMode>
+          <Story />
+        </React.StrictMode>
+      </ErrorBoundary>
+    ),
+  ],
 };
 
-export default preview;
+export default preview; 

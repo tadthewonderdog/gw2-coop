@@ -54,22 +54,26 @@ export default meta;
 
 type Story = StoryObj<typeof AchievementsAccordionGroup>;
 
+// Create a wrapper component to handle state
+const AccordionGroupWrapper = () => {
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>("1");
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(1);
+
+  return (
+    <AchievementsAccordionGroup
+      categories={mockCategories}
+      groups={mockGroups}
+      selectedCategoryId={selectedCategoryId}
+      selectedGroupId={selectedGroupId}
+      onSelectCategory={(catId, groupId) => {
+        setSelectedGroupId(groupId);
+        setSelectedCategoryId(catId);
+      }}
+      onSelectGroup={setSelectedGroupId}
+    />
+  );
+};
+
 export const Default: Story = {
-  render: () => {
-    const [selectedGroupId, setSelectedGroupId] = useState<string | null>("1");
-    const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(1);
-    return (
-      <AchievementsAccordionGroup
-        categories={mockCategories}
-        groups={mockGroups}
-        selectedCategoryId={selectedCategoryId}
-        selectedGroupId={selectedGroupId}
-        onSelectCategory={(catId, groupId) => {
-          setSelectedGroupId(groupId);
-          setSelectedCategoryId(catId);
-        }}
-        onSelectGroup={setSelectedGroupId}
-      />
-    );
-  },
+  render: () => <AccordionGroupWrapper />,
 };
