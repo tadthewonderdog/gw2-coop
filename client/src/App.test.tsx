@@ -1,6 +1,5 @@
 // Vitest test file for App.tsx
 import { render, screen } from "@testing-library/react";
-import { HelmetProvider } from "react-helmet-async";
 import { MemoryRouter } from "react-router-dom";
 import { describe, it, expect, vi } from "vitest";
 
@@ -38,11 +37,9 @@ vi.mock("@/stores/api-keys", () => ({
 // Helper to render App at a specific route
 function renderWithRoute(route: string) {
   return render(
-    <HelmetProvider>
-      <MemoryRouter initialEntries={[route]}>
-        <App />
-      </MemoryRouter>
-    </HelmetProvider>
+    <MemoryRouter initialEntries={[route]}>
+      <App />
+    </MemoryRouter>
   );
 }
 
