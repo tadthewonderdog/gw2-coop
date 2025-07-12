@@ -292,7 +292,6 @@ describe("useThemePreference", () => {
       const { result } = renderHook(() => useThemePreference());
 
       act(() => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         result.current.setTheme(longTheme as "dark" | "light" | "system");
       });
 
@@ -308,7 +307,6 @@ describe("useThemePreference", () => {
       const { result } = renderHook(() => useThemePreference());
 
       act(() => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         result.current.setTheme(specialTheme as "dark" | "light" | "system");
       });
 
@@ -323,7 +321,6 @@ describe("useThemePreference", () => {
       const { result } = renderHook(() => useThemePreference());
 
       act(() => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         result.current.setTheme("" as "dark" | "light" | "system");
       });
 
@@ -338,7 +335,6 @@ describe("useThemePreference", () => {
       const { result } = renderHook(() => useThemePreference());
 
       act(() => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         result.current.setTheme(null as unknown as "dark" | "light" | "system");
       });
 
@@ -346,7 +342,6 @@ describe("useThemePreference", () => {
       expect(localStorageMock.setItem).toHaveBeenCalledWith("vite-ui-theme", null);
 
       act(() => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         result.current.setTheme(undefined as unknown as "dark" | "light" | "system");
       });
 

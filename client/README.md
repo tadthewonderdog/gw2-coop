@@ -232,12 +232,3 @@ MIT
 - [Vite](https://vite.dev/)
 
 ---
-
-### React 19 Migration Notes
-
-This project was upgraded from React 18 to React 19 in PR #13. Key changes:
-- Uses React 19's native metadata support (no more react-helmet-async)
-- Updated error boundary and logging patterns for React 19
-- All code and dependencies are now compatible with React 19
-
-If you have local branches based on React 18, rebase them onto the latest main branch and resolve any breaking changes per the [React 19 release notes](https://react.dev/blog/2024/04/25/react-v19.0.0).
