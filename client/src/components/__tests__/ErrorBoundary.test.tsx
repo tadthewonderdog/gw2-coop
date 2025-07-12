@@ -104,10 +104,8 @@ describe("ErrorBoundary", () => {
 
   it("reloads page when refresh button is clicked", () => {
     const originalLocation = window.location;
-    // @ts-expect-error - Mocking window.location
-    delete window.location;
-    // @ts-expect-error - Mocking window.location for testing
-    window.location = { ...originalLocation, reload: vi.fn() } as Location;
+    delete (window as any).location;
+    (window as any).location = { ...originalLocation, reload: vi.fn() };
     render(
       <ErrorBoundary>
         <ThrowError />
@@ -116,8 +114,7 @@ describe("ErrorBoundary", () => {
     const refreshButton = screen.getByRole("button", { name: /refresh page/i });
     fireEvent.click(refreshButton);
     expect(window.location.reload).toHaveBeenCalledTimes(1);
-    // @ts-expect-error - Restoring window.location
-    window.location = originalLocation;
+    (window as any).location = originalLocation;
   });
 
   it("logs error details to console", () => {
@@ -126,9 +123,14 @@ describe("ErrorBoundary", () => {
         <ThrowError />
       </ErrorBoundary>
     );
+    // React 19 changed the error logging format
     expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Error: Uncaught [Error: Test error]"),
-      expect.any(Error)
+      expect.stringContaining("%o\n\n%s\n\n%s\n"),
+      expect.any(Error),
+      expect.stringContaining("The above error occurred in the <ThrowError> component."),
+      expect.stringContaining(
+        "React will try to recreate this component tree from scratch using the error boundary you provided, ErrorBoundary."
+      )
     );
   });
 });

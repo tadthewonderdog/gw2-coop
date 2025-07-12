@@ -1,4 +1,3 @@
-import { Helmet } from "react-helmet-async";
 import { Routes, Route, Link } from "react-router-dom";
 
 import { Header } from "@/components/Header";
@@ -27,14 +26,12 @@ const linkClasses = cn(
 function HomePage() {
   return (
     <>
-      <Helmet>
-        <title>Achievement Tracker</title>
-        <meta
-          content="Welcome to your achievement tracker! Team up with friends and keep track of your adventures together."
-          name="description"
-        />
-        <meta content="hsl(var(--primary))" name="theme-color" />
-      </Helmet>
+      <title>Achievement Tracker</title>
+      <meta
+        content="Welcome to your achievement tracker! Team up with friends and keep track of your adventures together."
+        name="description"
+      />
+      <meta content="hsl(var(--primary))" name="theme-color" />
       <main className="relative z-10 bg-background text-foreground">
         <div className="container mx-auto py-8">
           <div className="text-center mb-12 animate-float">
