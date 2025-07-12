@@ -71,7 +71,7 @@ describe("ErrorBoundary", () => {
         <ThrowNonError />
       </ErrorBoundary>
     );
-    expect(screen.getByText(/we're sorry, but something went wrong/i)).toBeInTheDocument();
+    expect(screen.getByText(/oops! something went wrong/i)).toBeInTheDocument();
   });
 
   it("resets error state when try again button is clicked", async () => {
@@ -125,8 +125,12 @@ describe("ErrorBoundary", () => {
       </ErrorBoundary>
     );
     expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Error: Uncaught [Error: Test error]"),
-      expect.any(Error)
+      expect.stringContaining("%o\n\n%s\n\n%s\n"),
+      expect.any(Error),
+      expect.stringContaining("The above error occurred in the <ThrowError> component."),
+      expect.stringContaining(
+        "React will try to recreate this component tree from scratch using the error boundary you provided, ErrorBoundary."
+      )
     );
   });
 });
