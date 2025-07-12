@@ -90,9 +90,7 @@ export default function Achievements() {
     setLoadingAchievements,
     setLoadingAccountAchievements,
     setGroupsError,
-    setCategoriesError,
     setAchievementsError,
-    setAccountAchievementsError,
   } = useAchievementsStore();
 
   const navigate = useNavigate();
@@ -145,7 +143,7 @@ export default function Achievements() {
         setAccountAchievements(accountAchievementsData);
         setLoadingAccountAchievements(false);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof Error) {
         setGroupsError(error.message);
       } else {
@@ -164,8 +162,6 @@ export default function Achievements() {
     setLoadingCategories,
     setLoadingAccountAchievements,
     setGroupsError,
-    setCategoriesError,
-    setAccountAchievementsError,
     useCache,
   ]);
 
@@ -212,7 +208,7 @@ export default function Achievements() {
         if (!parsed.success) throw new Error("Invalid achievement data");
         setAchievements(selectedCategoryId, parsed.data);
         setLoadingAchievements(false);
-      } catch (error) {
+      } catch (error: unknown) {
         if (error instanceof Error) {
           setAchievementsError(error.message);
         } else {
