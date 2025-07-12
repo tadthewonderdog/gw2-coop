@@ -33,6 +33,7 @@ $ npm run dev
 - **Functional, Modular Design**: Components, hooks, and stores are small, composable, and colocated with tests.
 - **State Management**: [Zustand](https://docs.pmnd.rs/zustand/) for client state, [TanStack React Query](https://tanstack.com/query/latest/docs/framework/react/overview) for server state.
 - **UI/UX**: [Tailwind CSS](https://tailwindcss.com/), [Shadcn UI](https://ui.shadcn.com/docs), [Radix UI](https://www.radix-ui.com/primitives/docs/overview/introduction) for accessible, modern, and customizable UI.
+- **Metadata**: Uses React 19's native metadata support (replaces react-helmet-async)
 - **Testing**: [Vitest](https://vitest.dev/) + [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/).
 - **Validation**: [Zod](https://zod.dev/) for all user input and API data.
 - **Performance**: Dynamic imports, memoization, code splitting, and image optimization (WebP, lazy loading).
@@ -65,7 +66,7 @@ src/
 
 ## 🛠️ Tech Stack
 
-- **Framework**: React 18 + TypeScript
+- **Framework**: React 19 + TypeScript
 - **Build Tool**: [Vite](https://vite.dev/)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/), [Shadcn UI](https://ui.shadcn.com/docs), [Radix UI](https://www.radix-ui.com/primitives/docs/overview/introduction), [Lucide React](https://lucide.dev/)
 - **State**: [Zustand](https://docs.pmnd.rs/zustand/)
@@ -231,3 +232,12 @@ MIT
 - [Vite](https://vite.dev/)
 
 ---
+
+### React 19 Migration Notes
+
+This project was upgraded from React 18 to React 19 in PR #13. Key changes:
+- Uses React 19's native metadata support (no more react-helmet-async)
+- Updated error boundary and logging patterns for React 19
+- All code and dependencies are now compatible with React 19
+
+If you have local branches based on React 18, rebase them onto the latest main branch and resolve any breaking changes per the [React 19 release notes](https://react.dev/blog/2024/04/25/react-v19.0.0).
