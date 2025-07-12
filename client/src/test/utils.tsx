@@ -20,9 +20,8 @@ export const mockLocalStorage = {
 };
 
 // Mock API response with error
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const mockApiError = (error: any): Promise<never> => {
-  return Promise.reject(error);
+export const mockApiError = (): Promise<never> => {
+  return Promise.reject(new Error("Test error"));
 };
 
 // Mock sessionStorage helper

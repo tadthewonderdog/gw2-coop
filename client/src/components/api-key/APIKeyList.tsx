@@ -169,7 +169,7 @@ export function APIKeyList() {
       let isInvalid = false;
       try {
         characters = await getCharacters(key.key);
-      } catch (err) {
+      } catch {
         isInvalid = true;
         characters = [] as CharacterInfo[];
       }
@@ -180,7 +180,7 @@ export function APIKeyList() {
         isInvalid,
         characters,
       });
-    } catch (err) {
+    } catch {
       updateKey(key.id, { isInvalid: true });
     } finally {
       setRefreshingKeyId(null);
@@ -227,7 +227,7 @@ export function APIKeyList() {
     try {
       await navigator.clipboard.writeText(JSON.stringify(exportData, null, 2));
       setExportSuccess("API keys copied to clipboard!");
-    } catch (err) {
+    } catch {
       setExportSuccess("Failed to copy to clipboard.");
     }
   };
@@ -312,7 +312,7 @@ export function APIKeyList() {
           let isInvalid = false;
           try {
             characters = await getCharacters(key);
-          } catch (err) {
+          } catch {
             isInvalid = true;
             characters = [];
           }
@@ -724,7 +724,7 @@ export function APIKeyList() {
         initialData={editingKey ? keys.find((k) => k.id === editingKey) : undefined}
         isLoading={isLoading}
         open={!!editingKey}
-        onOpenChange={(open) => !open && setEditingKey(null)}
+        onOpenChange={(open: boolean) => !open && setEditingKey(null)}
         onSubmit={handleSubmit}
       />
 

@@ -1,8 +1,6 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
@@ -20,7 +18,7 @@ const ThrowCustomError = () => {
 
 // Component that throws a non-Error object
 const ThrowNonError = () => {
-  throw "This is not an Error object";
+  throw new Error("This is not an Error object");
 };
 
 describe("ErrorBoundary", () => {
@@ -33,8 +31,7 @@ describe("ErrorBoundary", () => {
   });
 
   afterEach(() => {
-    // Vitest mockRestore is always safe here; suppressing unbound-method lint for test context
-    // eslint-disable-next-line @typescript-eslint/unbound-method
+    // This is a safe usage: mockRestore is always called in the correct context for Vitest/Jest spies.
     consoleSpy.mockRestore();
   });
 
@@ -74,7 +71,7 @@ describe("ErrorBoundary", () => {
         <ThrowNonError />
       </ErrorBoundary>
     );
-    expect(screen.getByText(/we're sorry, but something went wrong/i)).toBeInTheDocument();
+    expect(screen.getByText(/oops! something went wrong/i)).toBeInTheDocument();
   });
 
   it("resets error state when try again button is clicked", async () => {
@@ -104,8 +101,11 @@ describe("ErrorBoundary", () => {
 
   it("reloads page when refresh button is clicked", () => {
     const originalLocation = window.location;
-    delete (window as any).location;
-    (window as any).location = { ...originalLocation, reload: vi.fn() };
+    // @ts-expect-error - Mocking window.location
+    delete window.location;
+    const reloadMock = vi.fn();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    window.location = { ...originalLocation, reload: reloadMock } as any;
     render(
       <ErrorBoundary>
         <ThrowError />
@@ -113,8 +113,9 @@ describe("ErrorBoundary", () => {
     );
     const refreshButton = screen.getByRole("button", { name: /refresh page/i });
     fireEvent.click(refreshButton);
-    expect(window.location.reload).toHaveBeenCalledTimes(1);
-    (window as any).location = originalLocation;
+    expect(reloadMock).toHaveBeenCalledTimes(1);
+    // @ts-expect-error - Restoring window.location
+    window.location = originalLocation;
   });
 
   it("logs error details to console", () => {
@@ -123,7 +124,6 @@ describe("ErrorBoundary", () => {
         <ThrowError />
       </ErrorBoundary>
     );
-    // React 19 changed the error logging format
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining("%o\n\n%s\n\n%s\n"),
       expect.any(Error),

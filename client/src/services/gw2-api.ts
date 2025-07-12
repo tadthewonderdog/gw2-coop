@@ -169,7 +169,7 @@ export async function getAchievementCategories(useCache = false): Promise<Achiev
   if (useCache) {
     try {
       return await fetchCachedJson<AchievementCategory[]>("achievement-categories.json");
-    } catch (err) {
+    } catch {
       // If cache fails, proceed to live API, but if that also fails, the error will be thrown from there.
     }
   }
@@ -211,7 +211,7 @@ export async function getAchievements(ids?: number[], useCache = false): Promise
   if (useCache && !ids) {
     try {
       return await fetchCachedJson<Achievement[]>("achievements.json");
-    } catch (err) {
+    } catch {
       // If cache fails, proceed to live API, but if that also fails, the error will be thrown from there.
     }
   }
@@ -309,7 +309,7 @@ export async function getAchievementGroups(useCache = false): Promise<Achievemen
   if (useCache) {
     try {
       return await fetchCachedJson<AchievementGroup[]>("achievement-groups.json");
-    } catch (err) {
+    } catch {
       // If cache fails, proceed to live API, but if that also fails, the error will be thrown from there.
     }
   }

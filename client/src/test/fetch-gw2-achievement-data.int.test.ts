@@ -33,7 +33,7 @@ describe.skip("fetch-gw2-achievement-data integration", () => {
     // Check that each file exists and contains valid JSON
     for (const file of files) {
       const filePath = path.join(outputDir, file);
-      const content = await fs.readFile(filePath, "utf-8"); // eslint-disable-line @typescript-eslint/no-unsafe-return
+      const content = await fs.readFile(filePath, "utf-8");
       expect(() => JSON.parse(content)).not.toThrow();
     }
   }, 120_000); // Allow up to 2 minutes for network

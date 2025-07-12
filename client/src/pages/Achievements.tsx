@@ -90,9 +90,7 @@ export default function Achievements() {
     setLoadingAchievements,
     setLoadingAccountAchievements,
     setGroupsError,
-    setCategoriesError,
     setAchievementsError,
-    setAccountAchievementsError,
   } = useAchievementsStore();
 
   const navigate = useNavigate();
@@ -145,11 +143,12 @@ export default function Achievements() {
         setAccountAchievements(accountAchievementsData);
         setLoadingAccountAchievements(false);
       }
-    } catch (err) {
-      const error = err instanceof Error ? err.message : "Failed to load data";
-      if (!groups) setGroupsError(error);
-      if (!categories) setCategoriesError(error);
-      if (!accountAchievements) setAccountAchievementsError(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setGroupsError(error.message);
+      } else {
+        setGroupsError("Unknown error");
+      }
     }
   }, [
     groups,
@@ -163,14 +162,12 @@ export default function Achievements() {
     setLoadingCategories,
     setLoadingAccountAchievements,
     setGroupsError,
-    setCategoriesError,
-    setAccountAchievementsError,
     useCache,
   ]);
 
   useEffect(() => {
     if (!currentKey?.key) return;
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+
     void loadInitialData();
   }, [currentKey?.key, loadInitialData]);
 
@@ -211,9 +208,12 @@ export default function Achievements() {
         if (!parsed.success) throw new Error("Invalid achievement data");
         setAchievements(selectedCategoryId, parsed.data);
         setLoadingAchievements(false);
-      } catch (err) {
-        const error = err instanceof Error ? err.message : "Failed to load achievements";
-        setAchievementsError(error);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          setAchievementsError(error.message);
+        } else {
+          setAchievementsError("Unknown error");
+        }
         setLoadingAchievements(false);
       }
     };

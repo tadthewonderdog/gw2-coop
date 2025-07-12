@@ -11,7 +11,7 @@ import "./index.css";
 // Get the base path from environment variable, defaulting to "/"
 const basename: string = import.meta.env.VITE_BASE_PATH || "/";
 
-const el = document.getElementById("root"); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+const el = document.getElementById("root");
 if (!el || !(el instanceof HTMLElement)) {
   throw new Error("Root element not found");
 }

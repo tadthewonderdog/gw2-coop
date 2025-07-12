@@ -75,7 +75,7 @@ export function APIKeyDialog({
       let isInvalid = false;
       try {
         characters = await getCharacters(keyInput);
-      } catch (err) {
+      } catch {
         isInvalid = true;
         characters = [];
         // Optionally, set a local error or log

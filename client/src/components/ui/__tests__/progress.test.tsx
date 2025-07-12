@@ -82,14 +82,7 @@ describe("Progress", () => {
   });
 
   it("handles null value", () => {
-    render(
-      <Progress
-        value={
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          null as unknown as number
-        }
-      />
-    );
+    render(<Progress value={null as unknown as number} />);
 
     const progress = screen.getByRole("progressbar");
     expect(progress).toBeInTheDocument();
@@ -132,70 +125,35 @@ describe("Progress", () => {
   });
 
   it("handles string values", () => {
-    render(
-      <Progress
-        value={
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          "75" as unknown as number
-        }
-      />
-    );
+    render(<Progress value={"75" as unknown as number} />);
 
     const progress = screen.getByRole("progressbar");
     expect(progress).toBeInTheDocument();
   });
 
   it("handles boolean values", () => {
-    render(
-      <Progress
-        value={
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          true as unknown as number
-        }
-      />
-    );
+    render(<Progress value={true as unknown as number} />);
 
     const progress = screen.getByRole("progressbar");
     expect(progress).toBeInTheDocument();
   });
 
   it("handles false boolean value", () => {
-    render(
-      <Progress
-        value={
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          false as unknown as number
-        }
-      />
-    );
+    render(<Progress value={false as unknown as number} />);
 
     const progress = screen.getByRole("progressbar");
     expect(progress).toBeInTheDocument();
   });
 
   it("handles array values", () => {
-    render(
-      <Progress
-        value={
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          [25] as unknown as number
-        }
-      />
-    );
+    render(<Progress value={[25] as unknown as number} />);
 
     const progress = screen.getByRole("progressbar");
     expect(progress).toBeInTheDocument();
   });
 
   it("handles object values", () => {
-    render(
-      <Progress
-        value={
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          { value: 50 } as unknown as number
-        }
-      />
-    );
+    render(<Progress value={{ value: 50 } as unknown as number} />);
 
     const progress = screen.getByRole("progressbar");
     expect(progress).toBeInTheDocument();
