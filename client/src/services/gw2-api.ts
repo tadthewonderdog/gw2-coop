@@ -82,7 +82,7 @@ let categoriesCache: { data: AchievementCategory[]; timestamp: number } | null =
 let groupsCache: { data: AchievementGroup[]; timestamp: number } | null = null;
 
 // Enhanced error handling for Zod validation
-function handleZodError(error: z.ZodError, context: string) {
+function handleZodError(_error: z.ZodError, context: string) {
   throw new GW2ApiError(`Invalid response format from GW2 API: ${context}`);
 }
 
