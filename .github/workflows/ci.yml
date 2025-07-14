@@ -158,6 +158,9 @@ jobs:
       - name: Build application
         run: npm run build
         working-directory: ${{ env.WORKING_DIRECTORY }}
+      - name: Cache GW2 achievement data
+        run: npm run fetch:gw2-achievement-data
+        working-directory: ${{ env.WORKING_DIRECTORY }}
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
