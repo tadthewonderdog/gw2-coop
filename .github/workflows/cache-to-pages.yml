@@ -4,6 +4,10 @@ on:
   schedule:
     - cron: '0 3 * * *'
   workflow_dispatch:
+  workflow_run:
+    workflows: [CI]
+    types:
+      - completed
 
 env:
   GH_TOKEN: ${{ github.token }}
