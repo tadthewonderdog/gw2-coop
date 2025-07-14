@@ -1,15 +1,17 @@
-name: Nightly GW2 Data Cache to Pages
+name: Update GW2 Data on Pages
 
 on:
   schedule:
     - cron: '0 3 * * *'
   workflow_dispatch:
 
-env:
-  WORKING_DIRECTORY: client
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
-  build-and-deploy:
+  update-data:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -22,15 +24,49 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-        working-directory: ${{ env.WORKING_DIRECTORY }}
+        working-directory: client
 
       - name: Fetch GW2 achievement data
         run: npm run fetch:gw2-achievement-data
-        working-directory: ${{ env.WORKING_DIRECTORY }}
+        working-directory: client
+
+      - name: Download latest deployed site artifact (try gh, fallback to curl)
+        id: download_artifact
+        run: |
+          set -e
+          mkdir -p _site
+          # Try gh CLI first
+          if gh api repos/${{ github.repository }}/deployments --jq '.[0].id' > deployment_id.txt 2>/dev/null; then
+            DEPLOYMENT_ID=$(cat deployment_id.txt)
+            ARTIFACT_URL=$(gh api repos/${{ github.repository }}/deployments/$DEPLOYMENT_ID/artifacts --jq '.artifacts[0].archive_download_url')
+            if [ -n "$ARTIFACT_URL" ]; then
+              curl -L -o site-artifact.zip -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "$ARTIFACT_URL"
+              unzip -q site-artifact.zip -d _site
+              exit 0
+            fi
+          fi
+          # Fallback: try to get the latest artifact via curl (GitHub API)
+          ARTIFACT_URL=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/artifacts" | \
+            jq -r '.artifacts[] | select(.name | test("github-pages")) | .archive_download_url' | head -n 1)
+          if [ -n "$ARTIFACT_URL" ]; then
+            curl -L -o site-artifact.zip -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "$ARTIFACT_URL"
+            unzip -q site-artifact.zip -d _site
+          else
+            echo "Could not find a previous site artifact. Exiting."
+            exit 1
+          fi
+
+      - name: Copy new data files into site
+        run: |
+          mkdir -p _site/data
+          cp client/public/data/*.json _site/data/
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '_site'
 
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./client/public/data
-          destination_dir: data 
+        id: deployment
+        uses: actions/deploy-pages@v4 
