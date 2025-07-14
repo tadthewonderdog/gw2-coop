@@ -155,7 +155,6 @@ async function fetchCachedJson<T>(path: string): Promise<T> {
   try {
     const url = CACHED_DATA_BASE_URL + path;
     if (!url.startsWith("data/")) {
-      // eslint-disable-next-line no-console
       console.warn(`[GW2-API] WARNING: Cache URL does not start with 'data/': ${url}`);
     }
     const res = await fetch(url);
