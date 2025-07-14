@@ -203,14 +203,16 @@ describe("GW2 API", () => {
     });
 
     it("should fallback to live API if cache fetch fails", async () => {
-      // First call (cache) fails
+      // First call (local cache) fails
       mockFetch.mockResolvedValueOnce({ ok: false });
-      // Second call (live API IDs) succeeds
+      // Second call (GitHub Pages cache) fails
+      mockFetch.mockResolvedValueOnce({ ok: false });
+      // Third call (live API IDs) succeeds
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve(["group1"]),
       });
-      // Third call (live API details) succeeds
+      // Fourth call (live API details) succeeds
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: () =>

@@ -1,7 +1,6 @@
 import { Routes, Route, Link } from "react-router-dom";
 
 import { Header } from "@/components/Header";
-import { ThemeProvider } from "@/components/ui/theme-provider";
 import { ComponentShowcase } from "@/examples/ComponentShowcase";
 import { cn } from "@/lib/utils";
 import Achievements from "@/pages/Achievements";
@@ -93,7 +92,7 @@ function HomePage() {
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="dark">
+    <>
       <Header />
       <Routes>
         <Route element={<HomePage />} path="/" />
@@ -102,7 +101,7 @@ function App() {
         <Route element={<Achievements />} path="/achievements" />
         <Route element={<ComponentShowcase />} path="/showcase" />
       </Routes>
-    </ThemeProvider>
+    </>
   );
 }
 
