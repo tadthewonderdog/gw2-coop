@@ -81,6 +81,11 @@ let achievementsCache: { data: Achievement[]; timestamp: number } | null = null;
 let categoriesCache: { data: AchievementCategory[]; timestamp: number } | null = null;
 let groupsCache: { data: AchievementGroup[]; timestamp: number } | null = null;
 
+// Enhanced error handling for Zod validation
+function handleZodError(_error: z.ZodError, context: string) {
+  throw new GW2ApiError(`Invalid response format from GW2 API: ${context}`);
+}
+
 export class GW2ApiError extends Error {
   constructor(
     message: string,
@@ -137,28 +142,68 @@ async function batchFetch<T>(
 ): Promise<T[]> {
   const BATCH_SIZE = 200;
   const results: T[] = [];
+
   for (let i = 0; i < ids.length; i += BATCH_SIZE) {
     const batch = ids.slice(i, i + BATCH_SIZE);
     const url = `${endpoint}?ids=${batch.join(",")}${versionParam}`;
+
     const response = await retryAsync(() => fetch(url), 3, 500);
+
+    if (!response.ok) {
+      throw new GW2ApiError(`Failed to fetch batch: ${response.status}`, response.status);
+    }
+
     const data = (await response.json()) as unknown;
-    results.push(...(schema.array().parse(data) as T[]));
+
+    try {
+      const parsed = schema.array().parse(data);
+      results.push(...(parsed as T[]));
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        handleZodError(error, `batch at ${endpoint}`);
+      }
+      throw error;
+    }
   }
+
   return results;
 }
 
 // Helper to fetch from public/data/*.json
 async function fetchCachedJson<T>(path: string): Promise<T> {
   try {
-    // Use the new base URL for cached data
-    const baseUrl = "https://tadthewonderdog.github.io/gw2-coop/data/";
-    const url = baseUrl + path;
-    const res = await fetch(url);
+    // Try local path first, then fallback to GitHub Pages
+    const localUrl = `/data/${path}`;
+    const githubUrl = `https://tadthewonderdog.github.io/gw2-coop/data/${path}`;
+
+    let res = await fetch(localUrl);
+
     if (!res.ok) {
-      throw new GW2ApiError(`Failed to fetch cached data: ${url}`, res.status);
+      res = await fetch(githubUrl);
     }
-    const data = (await res.json()) as T;
-    return data;
+
+    if (!res.ok) {
+      throw new GW2ApiError(`Failed to fetch cached data: ${path}`, res.status);
+    }
+
+    const data = (await res.json()) as unknown;
+
+    // Validate the data structure matches expected schema
+    if (path === "achievement-groups.json") {
+      try {
+        AchievementGroupSchema.array().parse(data);
+      } catch {
+        throw new GW2ApiError(`Cached groups data has invalid format: ${path}`);
+      }
+    } else if (path === "achievement-categories.json") {
+      try {
+        AchievementCategorySchema.array().parse(data);
+      } catch {
+        throw new GW2ApiError(`Cached categories data has invalid format: ${path}`);
+      }
+    }
+
+    return data as T;
   } catch (err) {
     if (err instanceof GW2ApiError) throw err;
     throw new GW2ApiError(`Network error fetching cached data: ${path}`);
@@ -168,26 +213,40 @@ async function fetchCachedJson<T>(path: string): Promise<T> {
 export async function getAchievementCategories(useCache = false): Promise<AchievementCategory[]> {
   if (useCache) {
     try {
-      return await fetchCachedJson<AchievementCategory[]>("achievement-categories.json");
+      const cachedData = await fetchCachedJson<AchievementCategory[]>(
+        "achievement-categories.json"
+      );
+      return cachedData;
     } catch {
       // If cache fails, proceed to live API, but if that also fails, the error will be thrown from there.
     }
   }
+
   if (
     categoriesCache &&
     Date.now() - categoriesCache.timestamp < ACHIEVEMENT_CATEGORY_CACHE_DURATION
   ) {
     return categoriesCache.data;
   }
+
   try {
     // 1. Fetch IDs
     const versionParam = "&v=2024-07-20T01:00:00.000Z";
-    const idsRes = await retryAsync(
-      () => fetch(`${GW2_API_BASE}/achievements/categories?v=2024-07-20T01:00:00.000Z`),
-      3,
-      500
-    );
-    const ids: number[] = (await idsRes.json()) as unknown as number[];
+    const idsUrl = `${GW2_API_BASE}/achievements/categories?v=2024-07-20T01:00:00.000Z`;
+
+    const idsRes = await retryAsync(() => fetch(idsUrl), 3, 500);
+
+    if (!idsRes.ok) {
+      throw new GW2ApiError("Failed to fetch category IDs", idsRes.status);
+    }
+
+    const idsData = (await idsRes.json()) as unknown;
+    const ids: number[] = idsData as number[];
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      throw new GW2ApiError("Invalid category IDs response");
+    }
+
     // 2. Fetch details
     const categories = await batchFetch<AchievementCategory>(
       `${GW2_API_BASE}/achievements/categories`,
@@ -195,11 +254,14 @@ export async function getAchievementCategories(useCache = false): Promise<Achiev
       versionParam,
       AchievementCategorySchema
     );
+
     categoriesCache = { data: categories, timestamp: Date.now() };
     return categories;
   } catch (error) {
     if (error instanceof GW2ApiError) throw error;
-    if (error instanceof z.ZodError) throw new GW2ApiError("Invalid response format from GW2 API");
+    if (error instanceof z.ZodError) {
+      handleZodError(error, "achievement categories");
+    }
     throw new GW2ApiError(
       "Failed to fetch achievement categories",
       error instanceof GW2ApiError ? error.status : undefined
@@ -308,24 +370,35 @@ export async function getUserProfile(apiKey: string): Promise<UserProfile> {
 export async function getAchievementGroups(useCache = false): Promise<AchievementGroup[]> {
   if (useCache) {
     try {
-      return await fetchCachedJson<AchievementGroup[]>("achievement-groups.json");
+      const cachedData = await fetchCachedJson<AchievementGroup[]>("achievement-groups.json");
+      return cachedData;
     } catch {
       // If cache fails, proceed to live API, but if that also fails, the error will be thrown from there.
     }
   }
+
   if (groupsCache && Date.now() - groupsCache.timestamp < ACHIEVEMENT_GROUP_CACHE_DURATION) {
     return groupsCache.data;
   }
+
   try {
     // 1. Fetch IDs
     const versionParam = "&v=2024-07-20T01:00:00.000Z";
-    const idsRes = await retryAsync(
-      () => fetch(`${GW2_API_BASE}/achievements/groups?v=2024-07-20T01:00:00.000Z`),
-      3,
-      500
-    );
-    if (!idsRes.ok) throw new GW2ApiError("Failed to fetch group IDs", idsRes.status);
-    const ids: string[] = (await idsRes.json()) as unknown as string[];
+    const idsUrl = `${GW2_API_BASE}/achievements/groups?v=2024-07-20T01:00:00.000Z`;
+
+    const idsRes = await retryAsync(() => fetch(idsUrl), 3, 500);
+
+    if (!idsRes.ok) {
+      throw new GW2ApiError("Failed to fetch group IDs", idsRes.status);
+    }
+
+    const idsData = (await idsRes.json()) as unknown;
+    const ids: string[] = idsData as string[];
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      throw new GW2ApiError("Invalid group IDs response");
+    }
+
     // 2. Fetch details
     const groups = await batchFetch<AchievementGroup>(
       `${GW2_API_BASE}/achievements/groups`,
@@ -333,13 +406,55 @@ export async function getAchievementGroups(useCache = false): Promise<Achievemen
       versionParam,
       AchievementGroupSchema
     );
+
     groupsCache = { data: groups, timestamp: Date.now() };
     return groups;
   } catch (error) {
     if (error instanceof GW2ApiError) throw error;
-    if (error instanceof z.ZodError) throw new GW2ApiError("Invalid response format from GW2 API");
+    if (error instanceof z.ZodError) {
+      handleZodError(error, "achievement groups");
+    }
     throw new GW2ApiError(
       "Failed to fetch achievement groups",
+      error instanceof GW2ApiError ? error.status : undefined
+    );
+  }
+}
+
+export async function getAchievementsByIds(ids: number[]): Promise<Achievement[]> {
+  if (ids.length === 0) {
+    return [];
+  }
+
+  try {
+    const versionParam = "&v=2024-07-20T01:00:00.000Z";
+    const idsParam = ids.join(",");
+    const url = `${GW2_API_BASE}/achievements?ids=${idsParam}${versionParam}`;
+
+    const response = await retryAsync(() => fetch(url), 3, 500);
+
+    if (!response.ok) {
+      throw new GW2ApiError("Failed to fetch achievements by IDs", response.status);
+    }
+
+    const data = (await response.json()) as unknown;
+
+    try {
+      const parsed = AchievementSchema.array().parse(data);
+      return parsed;
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        handleZodError(error, "achievements by IDs");
+      }
+      throw error;
+    }
+  } catch (error) {
+    if (error instanceof GW2ApiError) throw error;
+    if (error instanceof z.ZodError) {
+      handleZodError(error, "achievements by IDs");
+    }
+    throw new GW2ApiError(
+      "Failed to fetch achievements by IDs",
       error instanceof GW2ApiError ? error.status : undefined
     );
   }

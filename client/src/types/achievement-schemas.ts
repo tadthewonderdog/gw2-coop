@@ -76,7 +76,7 @@ export const AchievementSchema = z.object({
 export const AccountAchievementSchema = z.object({
   id: z.number().positive("Account achievement ID must be a positive number"),
   current: z.number().int().min(0, "Current progress must be non-negative").optional(),
-  max: z.number().int().positive("Max progress must be positive").optional(),
+  max: z.number().int().min(0, "Max progress must be non-negative").optional(),
   done: z.boolean(),
   bits: z.array(z.number().int().min(0, "Bit values must be non-negative")).optional(),
   repeated: z.number().int().min(0, "Repeated count must be non-negative").optional(),

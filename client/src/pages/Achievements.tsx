@@ -11,12 +11,12 @@ import {
   getAchievementCategories,
   getAccountAchievements,
   getAchievementGroups,
+  getAchievementsByIds,
 } from "@/services/gw2-api";
 import { useAchievementsStore } from "@/stores/achievements";
 import { useAchievementsUIStore } from "@/stores/achievements-ui";
 import { useAPIKeyStore } from "@/stores/api-keys";
 import {
-  AchievementSchema,
   isAchievementCategory,
   isAchievementArray,
   isAccountAchievement,
@@ -90,7 +90,9 @@ export default function Achievements() {
     setLoadingAchievements,
     setLoadingAccountAchievements,
     setGroupsError,
+    setCategoriesError,
     setAchievementsError,
+    setAccountAchievementsError,
   } = useAchievementsStore();
 
   const navigate = useNavigate();
@@ -123,27 +125,57 @@ export default function Achievements() {
       if (!hasFetchedGroups.current && !groups) {
         hasFetchedGroups.current = true;
         setLoadingGroups(true);
-        const groupsData = await getAchievementGroups(useCache);
-        setGroups(groupsData);
-        setLoadingGroups(false);
+        try {
+          const groupsData = await getAchievementGroups(useCache);
+          setGroups(groupsData);
+        } catch (error: unknown) {
+          if (error instanceof Error) {
+            setGroupsError(error.message);
+          } else {
+            setGroupsError("Unknown error loading groups");
+          }
+        } finally {
+          setLoadingGroups(false);
+        }
       }
+
       // Load categories if not cached, only once per key
       if (!hasFetchedCategories.current && !categories) {
         hasFetchedCategories.current = true;
         setLoadingCategories(true);
-        const categoriesData = await getAchievementCategories(useCache);
-        setCategories(categoriesData);
-        setLoadingCategories(false);
+        try {
+          const categoriesData = await getAchievementCategories(useCache);
+          setCategories(categoriesData);
+        } catch (error: unknown) {
+          if (error instanceof Error) {
+            setCategoriesError(error.message);
+          } else {
+            setCategoriesError("Unknown error loading categories");
+          }
+        } finally {
+          setLoadingCategories(false);
+        }
       }
+
       // Load account achievements if not cached, only once per key
       if (!hasFetchedAccountAchievements.current && !accountAchievements) {
         hasFetchedAccountAchievements.current = true;
         setLoadingAccountAchievements(true);
-        const accountAchievementsData = await getAccountAchievements(currentKey!.key);
-        setAccountAchievements(accountAchievementsData);
-        setLoadingAccountAchievements(false);
+        try {
+          const accountAchievementsData = await getAccountAchievements(currentKey!.key);
+          setAccountAchievements(accountAchievementsData);
+        } catch (error: unknown) {
+          if (error instanceof Error) {
+            setAccountAchievementsError(error.message);
+          } else {
+            setAccountAchievementsError("Unknown error loading account achievements");
+          }
+        } finally {
+          setLoadingAccountAchievements(false);
+        }
       }
     } catch (error: unknown) {
+      // This should not happen, but just in case
       if (error instanceof Error) {
         setGroupsError(error.message);
       } else {
@@ -162,6 +194,8 @@ export default function Achievements() {
     setLoadingCategories,
     setLoadingAccountAchievements,
     setGroupsError,
+    setCategoriesError,
+    setAccountAchievementsError,
     useCache,
   ]);
 
@@ -173,14 +207,19 @@ export default function Achievements() {
 
   // Load achievements when a category is selected
   useEffect(() => {
-    if (!currentKey?.key || !selectedCategoryId || !categories) return;
+    if (!currentKey?.key || !selectedCategoryId || !categories) {
+      return;
+    }
 
     const loadCategoryAchievements = async () => {
       // Skip if already cached
-      if (achievements[selectedCategoryId]) return;
+      if (achievements[selectedCategoryId]) {
+        return;
+      }
 
       try {
         setLoadingAchievements(true);
+
         // Find the selected category
         const selectedCategory = categories.find((cat) => cat.id === selectedCategoryId);
         if (!selectedCategory || !isAchievementCategory(selectedCategory)) {
@@ -196,17 +235,9 @@ export default function Achievements() {
           return;
         }
 
-        // Fetch only the needed achievements
-        const idsParam = achievementIds.join(",");
-        const versionParam = "&v=2024-07-20T01:00:00.000Z";
-        const response = await fetch(
-          `https://api.guildwars2.com/v2/achievements?ids=${idsParam}${versionParam}`
-        );
-        if (!response.ok) throw new Error("Failed to fetch achievements");
-        const data = (await response.json()) as unknown;
-        const parsed = AchievementSchema.array().safeParse(data);
-        if (!parsed.success) throw new Error("Invalid achievement data");
-        setAchievements(selectedCategoryId, parsed.data);
+        // Fetch only the needed achievements using the service
+        const achievementData = await getAchievementsByIds(achievementIds);
+        setAchievements(selectedCategoryId, achievementData);
         setLoadingAchievements(false);
       } catch (error: unknown) {
         if (error instanceof Error) {
@@ -339,23 +370,37 @@ export default function Achievements() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {isLoadingGroups || isLoadingCategories ? (
-                <LoadingState message="Loading groups..." />
-              ) : groupsError || categoriesError ? (
-                <ErrorState message={groupsError || categoriesError || "Failed to load groups"} />
-              ) : groups && categories ? (
-                <AchievementsAccordionGroup
-                  categories={categories}
-                  groups={groups}
-                  selectedCategoryId={selectedCategoryId}
-                  selectedGroupId={selectedGroupId}
-                  onSelectCategory={(catId, groupId) => {
-                    setSelectedGroupId(groupId);
-                    setSelectedCategoryId(catId);
-                  }}
-                  onSelectGroup={setSelectedGroupId}
-                />
-              ) : null}
+              {(() => {
+                if (isLoadingGroups || isLoadingCategories) {
+                  return <LoadingState message="Loading groups..." />;
+                }
+
+                if (groupsError || categoriesError) {
+                  return (
+                    <ErrorState
+                      message={groupsError || categoriesError || "Failed to load groups"}
+                    />
+                  );
+                }
+
+                if (groups && categories) {
+                  return (
+                    <AchievementsAccordionGroup
+                      categories={categories}
+                      groups={groups}
+                      selectedCategoryId={selectedCategoryId}
+                      selectedGroupId={selectedGroupId}
+                      onSelectCategory={(catId, groupId) => {
+                        setSelectedGroupId(groupId);
+                        setSelectedCategoryId(catId);
+                      }}
+                      onSelectGroup={setSelectedGroupId}
+                    />
+                  );
+                }
+
+                return null;
+              })()}
             </CardContent>
           </Card>
         </aside>
