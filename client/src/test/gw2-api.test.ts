@@ -166,7 +166,7 @@ describe("GW2 API", () => {
           categories: [],
         },
       ]);
-      expect(mockFetch).toHaveBeenCalledWith("/data/achievement-groups.json");
+      expect(mockFetch).toHaveBeenCalledWith("data/achievement-groups.json");
     });
 
     it("should fetch from live API when useCache is false", async () => {
@@ -205,14 +205,12 @@ describe("GW2 API", () => {
     it("should fallback to live API if cache fetch fails", async () => {
       // First call (local cache) fails
       mockFetch.mockResolvedValueOnce({ ok: false });
-      // Second call (GitHub Pages cache) fails
-      mockFetch.mockResolvedValueOnce({ ok: false });
-      // Third call (live API IDs) succeeds
+      // Second call (live API IDs) succeeds
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve(["group1"]),
       });
-      // Fourth call (live API details) succeeds
+      // Third call (live API details) succeeds
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: () =>
@@ -307,7 +305,7 @@ describe("GW2 API", () => {
           achievements: [1, 2, 3],
         },
       ]);
-      expect(mockFetch).toHaveBeenCalledWith("/data/achievement-categories.json");
+      expect(mockFetch).toHaveBeenCalledWith("data/achievement-categories.json");
     });
 
     it("should fetch achievements from cache when useCache is true", async () => {
@@ -318,7 +316,7 @@ describe("GW2 API", () => {
       });
       const achs = await getAchievements(undefined, true);
       expect(achs).toEqual([{ id: 1, name: "Achievement 1", description: "Test achievement" }]);
-      expect(mockFetch).toHaveBeenCalledWith("/data/achievements.json");
+      expect(mockFetch).toHaveBeenCalledWith("data/achievements.json");
     });
   });
 });

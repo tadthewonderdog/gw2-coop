@@ -169,19 +169,17 @@ async function batchFetch<T>(
   return results;
 }
 
+// Centralized cache base URL (relative path)
+const CACHED_DATA_BASE_URL = "data/";
+
 // Helper to fetch from public/data/*.json
 async function fetchCachedJson<T>(path: string): Promise<T> {
   try {
-    // Try local path first, then fallback to GitHub Pages
-    const localUrl = `/data/${path}`;
-    const githubUrl = `https://tadthewonderdog.github.io/gw2-coop/data/${path}`;
-
-    let res = await fetch(localUrl);
-
-    if (!res.ok) {
-      res = await fetch(githubUrl);
+    const url = CACHED_DATA_BASE_URL + path;
+    if (!url.startsWith("data/")) {
+      console.warn(`[GW2-API] WARNING: Cache URL does not start with 'data/': ${url}`);
     }
-
+    const res = await fetch(url);
     if (!res.ok) {
       throw new GW2ApiError(`Failed to fetch cached data: ${path}`, res.status);
     }
@@ -210,7 +208,7 @@ async function fetchCachedJson<T>(path: string): Promise<T> {
   }
 }
 
-export async function getAchievementCategories(useCache = false): Promise<AchievementCategory[]> {
+export async function getAchievementCategories(useCache = true): Promise<AchievementCategory[]> {
   if (useCache) {
     try {
       const cachedData = await fetchCachedJson<AchievementCategory[]>(
@@ -269,7 +267,7 @@ export async function getAchievementCategories(useCache = false): Promise<Achiev
   }
 }
 
-export async function getAchievements(ids?: number[], useCache = false): Promise<Achievement[]> {
+export async function getAchievements(ids?: number[], useCache = true): Promise<Achievement[]> {
   if (useCache && !ids) {
     try {
       return await fetchCachedJson<Achievement[]>("achievements.json");
@@ -367,7 +365,7 @@ export async function getUserProfile(apiKey: string): Promise<UserProfile> {
   }
 }
 
-export async function getAchievementGroups(useCache = false): Promise<AchievementGroup[]> {
+export async function getAchievementGroups(useCache = true): Promise<AchievementGroup[]> {
   if (useCache) {
     try {
       const cachedData = await fetchCachedJson<AchievementGroup[]>("achievement-groups.json");

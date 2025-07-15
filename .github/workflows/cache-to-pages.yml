@@ -4,6 +4,13 @@ on:
   schedule:
     - cron: '0 3 * * *'
   workflow_dispatch:
+  workflow_run:
+    workflows: [CI]
+    types:
+      - completed
+
+env:
+  GH_TOKEN: ${{ github.token }}
 
 permissions:
   contents: read
@@ -35,23 +42,25 @@ jobs:
         run: |
           set -e
           mkdir -p _site
-          # Try gh CLI first
-          if gh api repos/${{ github.repository }}/deployments --jq '.[0].id' > deployment_id.txt 2>/dev/null; then
-            DEPLOYMENT_ID=$(cat deployment_id.txt)
-            ARTIFACT_URL=$(gh api repos/${{ github.repository }}/deployments/$DEPLOYMENT_ID/artifacts --jq '.artifacts[0].archive_download_url')
-            if [ -n "$ARTIFACT_URL" ]; then
-              curl -L -o site-artifact.zip -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "$ARTIFACT_URL"
-              unzip -q site-artifact.zip -d _site
-              exit 0
-            fi
-          fi
+          # # Try gh CLI first
+          # if gh api repos/${{ github.repository }}/deployments --jq '.[0].id' > deployment_id.txt 2>/dev/null; then
+          #   DEPLOYMENT_ID=$(cat deployment_id.txt)
+          #   ARTIFACT_URL=$(gh api repos/${{ github.repository }}/deployments/$DEPLOYMENT_ID/artifacts --jq '.artifacts[0].archive_download_url')
+          #   if [ -n "$ARTIFACT_URL" ]; then
+          #     curl -L -o site-artifact.zip -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "$ARTIFACT_URL"
+          #     unzip -q site-artifact.zip
+          #     tar -xvf artifact.tar -C _site
+          #     exit 0
+          #   fi
+          # fi
           # Fallback: try to get the latest artifact via curl (GitHub API)
           ARTIFACT_URL=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             "https://api.github.com/repos/${{ github.repository }}/actions/artifacts" | \
             jq -r '.artifacts[] | select(.name | test("github-pages")) | .archive_download_url' | head -n 1)
           if [ -n "$ARTIFACT_URL" ]; then
             curl -L -o site-artifact.zip -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "$ARTIFACT_URL"
-            unzip -q site-artifact.zip -d _site
+            unzip -q site-artifact.zip
+            tar -xvf artifact.tar -C _site
           else
             echo "Could not find a previous site artifact. Exiting."
             exit 1
