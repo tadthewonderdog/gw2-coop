@@ -12,6 +12,7 @@ import {
   getAccountAchievements,
   getAchievementGroups,
   getAchievementsByIds,
+  getAllAchievements,
 } from "@/services/gw2-api";
 import { useAchievementsStore } from "@/stores/achievements";
 import { useAchievementsUIStore } from "@/stores/achievements-ui";
@@ -93,6 +94,7 @@ export default function Achievements() {
     setCategoriesError,
     setAchievementsError,
     setAccountAchievementsError,
+    setAllAchievements,
   } = useAchievementsStore();
 
   const navigate = useNavigate();
@@ -174,6 +176,15 @@ export default function Achievements() {
           setLoadingAccountAchievements(false);
         }
       }
+
+      // Load all achievements from cache
+      try {
+        const allAchievements = await getAllAchievements();
+        setAllAchievements(allAchievements);
+      } catch (error) {
+        // Optionally: handle error, e.g. set an error state or log
+        console.error("Failed to load all achievements cache:", error);
+      }
     } catch (error: unknown) {
       // This should not happen, but just in case
       if (error instanceof Error) {
@@ -197,6 +208,7 @@ export default function Achievements() {
     setCategoriesError,
     setAccountAchievementsError,
     useCache,
+    setAllAchievements,
   ]);
 
   useEffect(() => {

@@ -13,6 +13,7 @@ import type {
   AccountAchievement,
   AchievementGroup,
 } from "../types/achievements.ts";
+import { useAchievementsStore } from "@/stores/achievements";
 
 // Re-export schemas and types for use by other modules
 export {
@@ -306,6 +307,10 @@ export async function getAchievements(ids?: number[], useCache = true): Promise<
   }
 }
 
+export async function getAllAchievements(): Promise<Achievement[]> {
+  return fetchCachedJson<Achievement[]>("achievements.json");
+}
+
 export async function getAccountAchievements(apiKey: string): Promise<AccountAchievement[]> {
   try {
     const response = await retryAsync(
@@ -424,6 +429,13 @@ export async function getAchievementsByIds(ids: number[]): Promise<Achievement[]
     return [];
   }
 
+  // Try to use the cache first
+  const { allAchievements } = useAchievementsStore.getState?.() ?? {};
+  if (allAchievements && Array.isArray(allAchievements)) {
+    return allAchievements.filter((a) => ids.includes(a.id));
+  }
+
+  // Fallback to API fetch (existing logic)
   try {
     const versionParam = "&v=2024-07-20T01:00:00.000Z";
     const idsParam = ids.join(",");

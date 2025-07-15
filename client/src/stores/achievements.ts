@@ -17,6 +17,7 @@ interface AchievementsState {
   categories: AchievementCategory[] | null;
   achievements: Record<number, Achievement[]>; // Keyed by category ID
   accountAchievements: AccountAchievement[] | null;
+  allAchievements: Achievement[] | null;
 
   // Loading states
   isLoadingGroups: boolean;
@@ -35,6 +36,7 @@ interface AchievementsState {
   setCategories: (categories: AchievementCategory[] | null) => void;
   setAchievements: (categoryId: number, achievements: Achievement[]) => void;
   setAccountAchievements: (achievements: AccountAchievement[] | null) => void;
+  setAllAchievements: (achievements: Achievement[] | null) => void;
 
   // Loading actions
   setLoadingGroups: (loading: boolean) => void;
@@ -57,6 +59,7 @@ const initialState = {
   categories: null,
   achievements: {},
   accountAchievements: null,
+  allAchievements: null,
   isLoadingGroups: false,
   isLoadingCategories: false,
   isLoadingAchievements: false,
@@ -90,6 +93,9 @@ export const useAchievementsStore = create<AchievementsState>()(
       setAccountAchievements: (accountAchievements) => {
         set({ accountAchievements });
       },
+      setAllAchievements: (allAchievements) => {
+        set({ allAchievements });
+      },
 
       setLoadingGroups: (loading) => set({ isLoadingGroups: loading }),
       setLoadingCategories: (loading) => set({ isLoadingCategories: loading }),
@@ -112,6 +118,7 @@ export const useAchievementsStore = create<AchievementsState>()(
         categories: state.categories,
         achievements: state.achievements,
         accountAchievements: state.accountAchievements,
+        allAchievements: state.allAchievements,
       }),
     }
   )
