@@ -166,9 +166,7 @@ describe("GW2 API", () => {
           categories: [],
         },
       ]);
-      expect(mockFetch).toHaveBeenCalledWith(
-        "https://tadthewonderdog.github.io/gw2-coop/data/achievement-groups.json"
-      );
+      expect(mockFetch).toHaveBeenCalledWith("data/achievement-groups.json");
     });
 
     it("should fetch from live API when useCache is false", async () => {
@@ -205,7 +203,7 @@ describe("GW2 API", () => {
     });
 
     it("should fallback to live API if cache fetch fails", async () => {
-      // First call (cache) fails
+      // First call (local cache) fails
       mockFetch.mockResolvedValueOnce({ ok: false });
       // Second call (live API IDs) succeeds
       mockFetch.mockResolvedValueOnce({
@@ -307,9 +305,7 @@ describe("GW2 API", () => {
           achievements: [1, 2, 3],
         },
       ]);
-      expect(mockFetch).toHaveBeenCalledWith(
-        "https://tadthewonderdog.github.io/gw2-coop/data/achievement-categories.json"
-      );
+      expect(mockFetch).toHaveBeenCalledWith("data/achievement-categories.json");
     });
 
     it("should fetch achievements from cache when useCache is true", async () => {
@@ -320,9 +316,7 @@ describe("GW2 API", () => {
       });
       const achs = await getAchievements(undefined, true);
       expect(achs).toEqual([{ id: 1, name: "Achievement 1", description: "Test achievement" }]);
-      expect(mockFetch).toHaveBeenCalledWith(
-        "https://tadthewonderdog.github.io/gw2-coop/data/achievements.json"
-      );
+      expect(mockFetch).toHaveBeenCalledWith("data/achievements.json");
     });
   });
 });
