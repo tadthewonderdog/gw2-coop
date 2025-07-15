@@ -109,6 +109,7 @@ export const useAchievementsUIStore = create<AchievementsUIState>()(
         filters: {
           showCompleted: state.filters.showCompleted,
           showIncomplete: state.filters.showIncomplete,
+          searchQuery: typeof state.filters.searchQuery === "string" ? state.filters.searchQuery : "",
           rewardTypes: state.filters.rewardTypes,
         },
         sort: state.sort,
