@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { useAchievementsStore } from "@/stores/achievements";
+
 import { retryAsync } from "../lib/utils.js";
 import {
   AchievementCategorySchema,
@@ -13,7 +15,6 @@ import type {
   AccountAchievement,
   AchievementGroup,
 } from "../types/achievements.ts";
-import { useAchievementsStore } from "@/stores/achievements";
 
 // Re-export schemas and types for use by other modules
 export {

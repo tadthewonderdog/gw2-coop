@@ -8,21 +8,20 @@ import { LoadingState } from "@/components/achievements/LoadingState";
 import { PartyCard } from "@/components/PartyCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
+  getAchievementsForCategory,
+  mapAccountAchievementsById,
+  filterAndSortAchievements,
+} from "@/lib/achievement-utils";
+import {
   getAchievementCategories,
   getAccountAchievements,
   getAchievementGroups,
-  getAchievementsByIds,
   getAllAchievements,
 } from "@/services/gw2-api";
 import { useAchievementsStore } from "@/stores/achievements";
 import { useAchievementsUIStore } from "@/stores/achievements-ui";
 import { useAPIKeyStore } from "@/stores/api-keys";
-import {
-  isAchievementCategory,
-  isAchievementArray,
-  isAccountAchievement,
-} from "@/types/achievement-schemas";
-import type { Achievement, AccountAchievement, AchievementCategory } from "@/types/achievements";
+import type { AchievementCategory } from "@/types/achievements";
 
 // Lazy load heavy components
 const AchievementCard = lazy(() =>
@@ -37,13 +36,6 @@ const AchievementFilters = lazy(() =>
 );
 
 // Helper functions with proper typing
-function extractAchievementIds(achievements: AchievementCategory["achievements"]): number[] {
-  return achievements.map((a) => {
-    if (typeof a === "number") return a;
-    return a.id;
-  });
-}
-
 function getCategoryName(
   categories: AchievementCategory[] | null,
   categoryId: number | null
@@ -74,7 +66,6 @@ export default function Achievements() {
   const {
     groups,
     categories,
-    achievements,
     accountAchievements,
     isLoadingGroups,
     isLoadingCategories,
@@ -84,17 +75,15 @@ export default function Achievements() {
     achievementsError,
     setGroups,
     setCategories,
-    setAchievements,
     setAccountAchievements,
     setLoadingGroups,
     setLoadingCategories,
-    setLoadingAchievements,
     setLoadingAccountAchievements,
     setGroupsError,
     setCategoriesError,
-    setAchievementsError,
     setAccountAchievementsError,
     setAllAchievements,
+    allAchievements,
   } = useAchievementsStore();
 
   const navigate = useNavigate();
@@ -217,119 +206,22 @@ export default function Achievements() {
     void loadInitialData();
   }, [currentKey?.key, loadInitialData]);
 
-  // Load achievements when a category is selected
-  useEffect(() => {
-    if (!currentKey?.key || !selectedCategoryId || !categories) {
-      return;
-    }
-
-    const loadCategoryAchievements = async () => {
-      // Skip if already cached
-      if (achievements[selectedCategoryId]) {
-        return;
-      }
-
-      try {
-        setLoadingAchievements(true);
-
-        // Find the selected category
-        const selectedCategory = categories.find((cat) => cat.id === selectedCategoryId);
-        if (!selectedCategory || !isAchievementCategory(selectedCategory)) {
-          throw new Error("Category not found or invalid");
-        }
-
-        // Get achievement IDs for this category
-        const achievementIds = extractAchievementIds(selectedCategory.achievements);
-
-        if (achievementIds.length === 0) {
-          setAchievements(selectedCategoryId, []);
-          setLoadingAchievements(false);
-          return;
-        }
-
-        // Fetch only the needed achievements using the service
-        const achievementData = await getAchievementsByIds(achievementIds);
-        setAchievements(selectedCategoryId, achievementData);
-        setLoadingAchievements(false);
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          setAchievementsError(error.message);
-        } else {
-          setAchievementsError("Unknown error");
-        }
-        setLoadingAchievements(false);
-      }
-    };
-
-    void loadCategoryAchievements();
-  }, [
-    currentKey?.key,
-    selectedCategoryId,
-    categories,
-    achievements,
-    setAchievements,
-    setLoadingAchievements,
-    setAchievementsError,
-  ]);
-
   // Map account achievements by id for fast lookup
-  const accountAchievementMap = useMemo(() => {
-    const map: Record<number, AccountAchievement> = {};
-    (accountAchievements ?? []).filter(isAccountAchievement).forEach((a) => {
-      map[a.id] = a;
-    });
-    return map;
-  }, [accountAchievements]);
+  const accountAchievementMap = useMemo(
+    () => mapAccountAchievementsById(accountAchievements),
+    [accountAchievements]
+  );
 
-  // Get current category's achievements and apply filters
-  const currentAchievements = useMemo((): Achievement[] | null => {
-    if (!selectedCategoryId || !achievements[selectedCategoryId]) return null;
-
-    const categoryAchievements = achievements[selectedCategoryId];
-    if (!isAchievementArray(categoryAchievements)) {
-      console.error("Invalid achievement data for category:", selectedCategoryId);
-      return null;
-    }
-
-    const filteredAchievements = categoryAchievements.filter((achievement: Achievement) => {
-      const accountAchievement = accountAchievementMap[achievement.id];
-      const isCompleted = accountAchievement?.done;
-
-      // Apply completion filters
-      if (isCompleted && !filters.showCompleted) return false;
-      if (!isCompleted && !filters.showIncomplete) return false;
-
-      // Apply search filter
-      if (filters.searchQuery) {
-        const searchLower = filters.searchQuery.toLowerCase();
-        const matchesName = achievement.name.toLowerCase().includes(searchLower);
-        const matchesDesc = achievement.description?.toLowerCase().includes(searchLower);
-        if (!matchesName && !matchesDesc) return false;
-      }
-
-      return true;
-    });
-
-    // Apply sorting
-    return filteredAchievements.sort((a: Achievement, b: Achievement) => {
-      const accountA = accountAchievementMap[a.id];
-      const accountB = accountAchievementMap[b.id];
-
-      if (sort === "percentComplete") {
-        // Calculate completion percentages
-        const percentA =
-          accountA?.current && accountA?.max ? (accountA.current / accountA.max) * 100 : 0;
-        const percentB =
-          accountB?.current && accountB?.max ? (accountB.current / accountB.max) * 100 : 0;
-
-        // Sort by completion percentage (descending)
-        return percentB - percentA;
-      }
-
-      // Default to alphabetical sorting
-      return a.name.localeCompare(b.name);
-    });
-  }, [selectedCategoryId, achievements, accountAchievementMap, filters, sort]);
+  // Get current category's achievements and apply filters/sorting
+  const currentAchievements = useMemo(() => {
+    if (!selectedCategoryId || !allAchievements) return null;
+    const categoryAchievements = getAchievementsForCategory(
+      allAchievements,
+      categories,
+      selectedCategoryId
+    );
+    return filterAndSortAchievements(categoryAchievements, accountAchievementMap, filters, sort);
+  }, [selectedCategoryId, allAchievements, categories, accountAchievementMap, filters, sort]);
 
   // Add a handler for refresh
   const handleRefresh = async () => {
