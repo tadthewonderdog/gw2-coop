@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { useAchievementsStore } from "@/stores/achievements";
+
 import { retryAsync } from "../lib/utils.js";
 import {
   AchievementCategorySchema,
@@ -306,6 +308,10 @@ export async function getAchievements(ids?: number[], useCache = true): Promise<
   }
 }
 
+export async function getAllAchievements(): Promise<Achievement[]> {
+  return fetchCachedJson<Achievement[]>("achievements.json");
+}
+
 export async function getAccountAchievements(apiKey: string): Promise<AccountAchievement[]> {
   try {
     const response = await retryAsync(
@@ -424,6 +430,13 @@ export async function getAchievementsByIds(ids: number[]): Promise<Achievement[]
     return [];
   }
 
+  // Try to use the cache first
+  const { allAchievements } = useAchievementsStore.getState?.() ?? {};
+  if (allAchievements && Array.isArray(allAchievements)) {
+    return allAchievements.filter((a) => ids.includes(a.id));
+  }
+
+  // Fallback to API fetch (existing logic)
   try {
     const versionParam = "&v=2024-07-20T01:00:00.000Z";
     const idsParam = ids.join(",");

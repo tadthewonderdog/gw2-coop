@@ -33,7 +33,7 @@ export const AchievementFilters = memo(function AchievementFilters() {
         <Input
           className="pl-8"
           placeholder="Search achievements..."
-          value={filters.searchQuery}
+          value={filters.searchQuery ?? ""}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
         {filters.searchQuery && (

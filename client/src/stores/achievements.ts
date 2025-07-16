@@ -15,8 +15,8 @@ interface AchievementsState {
   // Cache
   groups: AchievementGroup[] | null;
   categories: AchievementCategory[] | null;
-  achievements: Record<number, Achievement[]>; // Keyed by category ID
   accountAchievements: AccountAchievement[] | null;
+  allAchievements: Achievement[] | null;
 
   // Loading states
   isLoadingGroups: boolean;
@@ -33,8 +33,8 @@ interface AchievementsState {
   // Actions
   setGroups: (groups: AchievementGroup[] | null) => void;
   setCategories: (categories: AchievementCategory[] | null) => void;
-  setAchievements: (categoryId: number, achievements: Achievement[]) => void;
   setAccountAchievements: (achievements: AccountAchievement[] | null) => void;
+  setAllAchievements: (achievements: Achievement[] | null) => void;
 
   // Loading actions
   setLoadingGroups: (loading: boolean) => void;
@@ -55,8 +55,8 @@ interface AchievementsState {
 const initialState = {
   groups: null,
   categories: null,
-  achievements: {},
   accountAchievements: null,
+  allAchievements: null,
   isLoadingGroups: false,
   isLoadingCategories: false,
   isLoadingAchievements: false,
@@ -82,13 +82,11 @@ export const useAchievementsStore = create<AchievementsState>()(
       setCategories: (categories) => {
         set({ categories });
       },
-      setAchievements: (categoryId, achievements) => {
-        set((state) => ({
-          achievements: { ...state.achievements, [categoryId]: achievements },
-        }));
-      },
       setAccountAchievements: (accountAchievements) => {
         set({ accountAchievements });
+      },
+      setAllAchievements: (allAchievements) => {
+        set({ allAchievements });
       },
 
       setLoadingGroups: (loading) => set({ isLoadingGroups: loading }),
@@ -110,8 +108,8 @@ export const useAchievementsStore = create<AchievementsState>()(
       partialize: (state) => ({
         groups: state.groups,
         categories: state.categories,
-        achievements: state.achievements,
         accountAchievements: state.accountAchievements,
+        allAchievements: state.allAchievements,
       }),
     }
   )

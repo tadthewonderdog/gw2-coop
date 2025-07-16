@@ -1,5 +1,5 @@
 import { Cloud, RefreshCw } from "lucide-react";
-import { useEffect, useMemo, useRef, useCallback, lazy, Suspense, useState } from "react";
+import { useEffect, useMemo, lazy, Suspense, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { AchievementsAccordionGroup } from "@/components/achievements/AchievementsAccordionGroup";
@@ -8,20 +8,15 @@ import { LoadingState } from "@/components/achievements/LoadingState";
 import { PartyCard } from "@/components/PartyCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  getAchievementCategories,
-  getAccountAchievements,
-  getAchievementGroups,
-  getAchievementsByIds,
-} from "@/services/gw2-api";
+  useAchievementsForCategory,
+  useCategoryName,
+  useAccountAchievements,
+} from "@/selectors/achievement-selectors";
+import { getAccountAchievements } from "@/services/gw2-api";
 import { useAchievementsStore } from "@/stores/achievements";
 import { useAchievementsUIStore } from "@/stores/achievements-ui";
 import { useAPIKeyStore } from "@/stores/api-keys";
-import {
-  isAchievementCategory,
-  isAchievementArray,
-  isAccountAchievement,
-} from "@/types/achievement-schemas";
-import type { Achievement, AccountAchievement, AchievementCategory } from "@/types/achievements";
+import type { AccountAchievement } from "@/types/achievements";
 
 // Lazy load heavy components
 const AchievementCard = lazy(() =>
@@ -35,23 +30,6 @@ const AchievementFilters = lazy(() =>
   }))
 );
 
-// Helper functions with proper typing
-function extractAchievementIds(achievements: AchievementCategory["achievements"]): number[] {
-  return achievements.map((a) => {
-    if (typeof a === "number") return a;
-    return a.id;
-  });
-}
-
-function getCategoryName(
-  categories: AchievementCategory[] | null,
-  categoryId: number | null
-): string {
-  if (!categoryId || !categories) return "Achievements";
-  const category = categories.find((cat) => cat.id === categoryId);
-  return category?.name || "Achievements";
-}
-
 export default function Achievements() {
   const keys = useAPIKeyStore((s) => s.keys);
   const currentKeyId = useAPIKeyStore((s) => s.currentKeyId);
@@ -63,35 +41,22 @@ export default function Achievements() {
     selectedCategoryId,
     setSelectedGroupId,
     setSelectedCategoryId,
-    filters,
-    sort,
     useCache,
     setUseCache,
   } = useAchievementsUIStore();
 
-  // Get cached data and loading states
+  // Get cached data and loading states from store
   const {
     groups,
     categories,
-    achievements,
-    accountAchievements,
     isLoadingGroups,
     isLoadingCategories,
     isLoadingAchievements,
     groupsError,
     categoriesError,
     achievementsError,
-    setGroups,
-    setCategories,
-    setAchievements,
     setAccountAchievements,
-    setLoadingGroups,
-    setLoadingCategories,
-    setLoadingAchievements,
     setLoadingAccountAchievements,
-    setGroupsError,
-    setCategoriesError,
-    setAchievementsError,
     setAccountAchievementsError,
   } = useAchievementsStore();
 
@@ -105,230 +70,51 @@ export default function Achievements() {
     }
   }, [currentKeyId, navigate]);
 
-  // Load groups, categories, and account achievements on mount
-  const hasFetchedAccountAchievements = useRef(false);
-  const hasFetchedCategories = useRef(false);
-  const hasFetchedGroups = useRef(false);
-
-  // Add a refresh state to trigger reloads
+  // Load account achievements if not cached, only once per key
+  const [hasFetchedAccountAchievements, setHasFetchedAccountAchievements] = useState(false);
+  const accountAchievements = useAccountAchievements();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Helper to clear in-memory caches (for refresh)
-  const { reset } = useAchievementsStore.getState();
-  const clearAchievementCaches = () => {
-    reset();
+  useEffect(() => {
+    if (!currentKey?.key || hasFetchedAccountAchievements || accountAchievements) return;
+    setHasFetchedAccountAchievements(true);
+    setLoadingAccountAchievements(true);
+    getAccountAchievements(currentKey.key)
+      .then(setAccountAchievements)
+      .catch((error: unknown) => {
+        if (error instanceof Error) {
+          setAccountAchievementsError(error.message);
+        } else {
+          setAccountAchievementsError("Unknown error loading account achievements");
+        }
+      })
+      .finally(() => setLoadingAccountAchievements(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentKey?.key, hasFetchedAccountAchievements, accountAchievements]);
+
+  // Handler for refresh (only account achievements)
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    setHasFetchedAccountAchievements(false);
+    setAccountAchievements(null);
+    setAccountAchievementsError(null);
+    setLoadingAccountAchievements(false);
+    // Will trigger useEffect to reload
+    setIsRefreshing(false);
   };
 
-  const loadInitialData = useCallback(async () => {
-    try {
-      // Load groups if not cached, only once per key
-      if (!hasFetchedGroups.current && !groups) {
-        hasFetchedGroups.current = true;
-        setLoadingGroups(true);
-        try {
-          const groupsData = await getAchievementGroups(useCache);
-          setGroups(groupsData);
-        } catch (error: unknown) {
-          if (error instanceof Error) {
-            setGroupsError(error.message);
-          } else {
-            setGroupsError("Unknown error loading groups");
-          }
-        } finally {
-          setLoadingGroups(false);
-        }
-      }
-
-      // Load categories if not cached, only once per key
-      if (!hasFetchedCategories.current && !categories) {
-        hasFetchedCategories.current = true;
-        setLoadingCategories(true);
-        try {
-          const categoriesData = await getAchievementCategories(useCache);
-          setCategories(categoriesData);
-        } catch (error: unknown) {
-          if (error instanceof Error) {
-            setCategoriesError(error.message);
-          } else {
-            setCategoriesError("Unknown error loading categories");
-          }
-        } finally {
-          setLoadingCategories(false);
-        }
-      }
-
-      // Load account achievements if not cached, only once per key
-      if (!hasFetchedAccountAchievements.current && !accountAchievements) {
-        hasFetchedAccountAchievements.current = true;
-        setLoadingAccountAchievements(true);
-        try {
-          const accountAchievementsData = await getAccountAchievements(currentKey!.key);
-          setAccountAchievements(accountAchievementsData);
-        } catch (error: unknown) {
-          if (error instanceof Error) {
-            setAccountAchievementsError(error.message);
-          } else {
-            setAccountAchievementsError("Unknown error loading account achievements");
-          }
-        } finally {
-          setLoadingAccountAchievements(false);
-        }
-      }
-    } catch (error: unknown) {
-      // This should not happen, but just in case
-      if (error instanceof Error) {
-        setGroupsError(error.message);
-      } else {
-        setGroupsError("Unknown error");
-      }
-    }
-  }, [
-    groups,
-    categories,
-    accountAchievements,
-    currentKey,
-    setGroups,
-    setCategories,
-    setAccountAchievements,
-    setLoadingGroups,
-    setLoadingCategories,
-    setLoadingAccountAchievements,
-    setGroupsError,
-    setCategoriesError,
-    setAccountAchievementsError,
-    useCache,
-  ]);
-
-  useEffect(() => {
-    if (!currentKey?.key) return;
-
-    void loadInitialData();
-  }, [currentKey?.key, loadInitialData]);
-
-  // Load achievements when a category is selected
-  useEffect(() => {
-    if (!currentKey?.key || !selectedCategoryId || !categories) {
-      return;
-    }
-
-    const loadCategoryAchievements = async () => {
-      // Skip if already cached
-      if (achievements[selectedCategoryId]) {
-        return;
-      }
-
-      try {
-        setLoadingAchievements(true);
-
-        // Find the selected category
-        const selectedCategory = categories.find((cat) => cat.id === selectedCategoryId);
-        if (!selectedCategory || !isAchievementCategory(selectedCategory)) {
-          throw new Error("Category not found or invalid");
-        }
-
-        // Get achievement IDs for this category
-        const achievementIds = extractAchievementIds(selectedCategory.achievements);
-
-        if (achievementIds.length === 0) {
-          setAchievements(selectedCategoryId, []);
-          setLoadingAchievements(false);
-          return;
-        }
-
-        // Fetch only the needed achievements using the service
-        const achievementData = await getAchievementsByIds(achievementIds);
-        setAchievements(selectedCategoryId, achievementData);
-        setLoadingAchievements(false);
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          setAchievementsError(error.message);
-        } else {
-          setAchievementsError("Unknown error");
-        }
-        setLoadingAchievements(false);
-      }
-    };
-
-    void loadCategoryAchievements();
-  }, [
-    currentKey?.key,
-    selectedCategoryId,
-    categories,
-    achievements,
-    setAchievements,
-    setLoadingAchievements,
-    setAchievementsError,
-  ]);
-
-  // Map account achievements by id for fast lookup
-  const accountAchievementMap = useMemo(() => {
-    const map: Record<number, AccountAchievement> = {};
-    (accountAchievements ?? []).filter(isAccountAchievement).forEach((a) => {
-      map[a.id] = a;
+  // Get current category's achievements using selector
+  const currentAchievements = useAchievementsForCategory(selectedCategoryId);
+  // Category name using selector
+  const categoryName = useCategoryName(selectedCategoryId);
+  // Build a map of account achievements for fast lookup
+  const accountAchievementsMap = useMemo(() => {
+    const map = new Map<number, AccountAchievement>();
+    (accountAchievements || []).forEach((aa) => {
+      map.set(aa.id, aa);
     });
     return map;
   }, [accountAchievements]);
-
-  // Get current category's achievements and apply filters
-  const currentAchievements = useMemo((): Achievement[] | null => {
-    if (!selectedCategoryId || !achievements[selectedCategoryId]) return null;
-
-    const categoryAchievements = achievements[selectedCategoryId];
-    if (!isAchievementArray(categoryAchievements)) {
-      console.error("Invalid achievement data for category:", selectedCategoryId);
-      return null;
-    }
-
-    const filteredAchievements = categoryAchievements.filter((achievement: Achievement) => {
-      const accountAchievement = accountAchievementMap[achievement.id];
-      const isCompleted = accountAchievement?.done;
-
-      // Apply completion filters
-      if (isCompleted && !filters.showCompleted) return false;
-      if (!isCompleted && !filters.showIncomplete) return false;
-
-      // Apply search filter
-      if (filters.searchQuery) {
-        const searchLower = filters.searchQuery.toLowerCase();
-        const matchesName = achievement.name.toLowerCase().includes(searchLower);
-        const matchesDesc = achievement.description?.toLowerCase().includes(searchLower);
-        if (!matchesName && !matchesDesc) return false;
-      }
-
-      return true;
-    });
-
-    // Apply sorting
-    return filteredAchievements.sort((a: Achievement, b: Achievement) => {
-      const accountA = accountAchievementMap[a.id];
-      const accountB = accountAchievementMap[b.id];
-
-      if (sort === "percentComplete") {
-        // Calculate completion percentages
-        const percentA =
-          accountA?.current && accountA?.max ? (accountA.current / accountA.max) * 100 : 0;
-        const percentB =
-          accountB?.current && accountB?.max ? (accountB.current / accountB.max) * 100 : 0;
-
-        // Sort by completion percentage (descending)
-        return percentB - percentA;
-      }
-
-      // Default to alphabetical sorting
-      return a.name.localeCompare(b.name);
-    });
-  }, [selectedCategoryId, achievements, accountAchievementMap, filters, sort]);
-
-  // Add a handler for refresh
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    clearAchievementCaches();
-    hasFetchedGroups.current = false;
-    hasFetchedCategories.current = false;
-    hasFetchedAccountAchievements.current = false;
-    await loadInitialData();
-    setIsRefreshing(false);
-  };
 
   return (
     <>
@@ -410,9 +196,7 @@ export default function Achievements() {
           <Card className="bg-background/50 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-foreground font-serif text-lg">
-                {selectedCategoryId
-                  ? getCategoryName(categories, selectedCategoryId)
-                  : "Select a Category"}
+                {selectedCategoryId ? categoryName : "Select a Category"}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -446,7 +230,7 @@ export default function Achievements() {
                       fallback={<LoadingState message="Loading achievement card..." />}
                     >
                       <AchievementCard
-                        accountAchievement={accountAchievementMap[achievement.id]}
+                        accountAchievement={accountAchievementsMap.get(achievement.id)}
                         achievement={achievement}
                       />
                     </Suspense>

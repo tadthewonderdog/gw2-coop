@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import Achievements from "@/pages/Achievements";
 import { GroupManagement } from "@/pages/GroupManagement";
 import KeyManagement from "@/pages/KeyManagement";
+import { AchievementDataProvider } from "@/providers/AchievementDataProvider";
 
 const featureCardClasses = cn(
   "bg-card/80 backdrop-blur-sm rounded-lg p-6",
@@ -92,7 +93,7 @@ function HomePage() {
 
 function App() {
   return (
-    <>
+    <AchievementDataProvider>
       <Header />
       <Routes>
         <Route element={<HomePage />} path="/" />
@@ -101,7 +102,7 @@ function App() {
         <Route element={<Achievements />} path="/achievements" />
         <Route element={<ComponentShowcase />} path="/showcase" />
       </Routes>
-    </>
+    </AchievementDataProvider>
   );
 }
 
