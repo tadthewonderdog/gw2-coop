@@ -8,10 +8,10 @@ import { LoadingState } from "@/components/achievements/LoadingState";
 import { PartyCard } from "@/components/PartyCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  getAchievementsForCategory,
-  mapAccountAchievementsById,
-  filterAndSortAchievements,
-} from "@/lib/achievement-utils";
+  useAchievementsForCategory,
+  useCategoryName,
+  useAccountAchievements,
+} from "@/selectors/achievement-selectors";
 import {
   getAchievementCategories,
   getAccountAchievements,
@@ -21,7 +21,7 @@ import {
 import { useAchievementsStore } from "@/stores/achievements";
 import { useAchievementsUIStore } from "@/stores/achievements-ui";
 import { useAPIKeyStore } from "@/stores/api-keys";
-import type { AchievementCategory } from "@/types/achievements";
+import type { AccountAchievement } from "@/types/achievements";
 
 // Lazy load heavy components
 const AchievementCard = lazy(() =>
@@ -35,16 +35,6 @@ const AchievementFilters = lazy(() =>
   }))
 );
 
-// Helper functions with proper typing
-function getCategoryName(
-  categories: AchievementCategory[] | null,
-  categoryId: number | null
-): string {
-  if (!categoryId || !categories) return "Achievements";
-  const category = categories.find((cat) => cat.id === categoryId);
-  return category?.name || "Achievements";
-}
-
 export default function Achievements() {
   const keys = useAPIKeyStore((s) => s.keys);
   const currentKeyId = useAPIKeyStore((s) => s.currentKeyId);
@@ -56,8 +46,6 @@ export default function Achievements() {
     selectedCategoryId,
     setSelectedGroupId,
     setSelectedCategoryId,
-    filters,
-    sort,
     useCache,
     setUseCache,
   } = useAchievementsUIStore();
@@ -66,7 +54,6 @@ export default function Achievements() {
   const {
     groups,
     categories,
-    accountAchievements,
     isLoadingGroups,
     isLoadingCategories,
     isLoadingAchievements,
@@ -83,7 +70,6 @@ export default function Achievements() {
     setCategoriesError,
     setAccountAchievementsError,
     setAllAchievements,
-    allAchievements,
   } = useAchievementsStore();
 
   const navigate = useNavigate();
@@ -100,6 +86,7 @@ export default function Achievements() {
   const hasFetchedAccountAchievements = useRef(false);
   const hasFetchedCategories = useRef(false);
   const hasFetchedGroups = useRef(false);
+  const accountAchievements = useAccountAchievements();
 
   // Add a refresh state to trigger reloads
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -206,22 +193,18 @@ export default function Achievements() {
     void loadInitialData();
   }, [currentKey?.key, loadInitialData]);
 
-  // Map account achievements by id for fast lookup
-  const accountAchievementMap = useMemo(
-    () => mapAccountAchievementsById(accountAchievements),
-    [accountAchievements]
-  );
-
-  // Get current category's achievements and apply filters/sorting
-  const currentAchievements = useMemo(() => {
-    if (!selectedCategoryId || !allAchievements) return null;
-    const categoryAchievements = getAchievementsForCategory(
-      allAchievements,
-      categories,
-      selectedCategoryId
-    );
-    return filterAndSortAchievements(categoryAchievements, accountAchievementMap, filters, sort);
-  }, [selectedCategoryId, allAchievements, categories, accountAchievementMap, filters, sort]);
+  // Get current category's achievements using selector
+  const currentAchievements = useAchievementsForCategory(selectedCategoryId);
+  // Category name using selector
+  const categoryName = useCategoryName(selectedCategoryId);
+  // Build a map of account achievements for fast lookup
+  const accountAchievementsMap = useMemo(() => {
+    const map = new Map<number, AccountAchievement>();
+    (accountAchievements || []).forEach((aa) => {
+      map.set(aa.id, aa);
+    });
+    return map;
+  }, [accountAchievements]);
 
   // Add a handler for refresh
   const handleRefresh = async () => {
@@ -314,9 +297,7 @@ export default function Achievements() {
           <Card className="bg-background/50 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-foreground font-serif text-lg">
-                {selectedCategoryId
-                  ? getCategoryName(categories, selectedCategoryId)
-                  : "Select a Category"}
+                {selectedCategoryId ? categoryName : "Select a Category"}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -350,7 +331,7 @@ export default function Achievements() {
                       fallback={<LoadingState message="Loading achievement card..." />}
                     >
                       <AchievementCard
-                        accountAchievement={accountAchievementMap[achievement.id]}
+                        accountAchievement={accountAchievementsMap.get(achievement.id)}
                         achievement={achievement}
                       />
                     </Suspense>
