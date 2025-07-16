@@ -65,4 +65,4 @@ export function getCategoryNameFromState(categoryId: number | null) {
 // Non-hook selector: All account achievements from Zustand state
 export function getAccountAchievementsFromState() {
   return useAchievementsStore.getState().accountAchievements;
-} 
+}

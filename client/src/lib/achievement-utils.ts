@@ -1,5 +1,9 @@
-import type { Achievement, AchievementCategory, AccountAchievement } from "@/types/achievements";
-import type { AchievementGroup } from "@/types/achievements";
+import type {
+  Achievement,
+  AchievementCategory,
+  AccountAchievement,
+  AchievementGroup,
+} from "@/types/achievements";
 
 /**
  * Extracts a flat array of achievement IDs from a category's achievements property.
@@ -87,31 +91,46 @@ export function filterAndSortAchievements(
 }
 
 // Get category by ID
-export function getCategoryById(categories: AchievementCategory[] | null, categoryId: number | null): AchievementCategory | undefined {
+export function getCategoryById(
+  categories: AchievementCategory[] | null,
+  categoryId: number | null
+): AchievementCategory | undefined {
   if (!categories || !categoryId) return undefined;
   return categories.find((cat) => cat.id === categoryId);
 }
 
 // Get group by ID
-export function getGroupById(groups: AchievementGroup[] | null, groupId: string | null): AchievementGroup | undefined {
+export function getGroupById(
+  groups: AchievementGroup[] | null,
+  groupId: string | null
+): AchievementGroup | undefined {
   if (!groups || !groupId) return undefined;
   return groups.find((group) => group.id === groupId);
 }
 
 // Get achievement by ID
-export function getAchievementById(allAchievements: Achievement[] | null, achievementId: number | null): Achievement | undefined {
+export function getAchievementById(
+  allAchievements: Achievement[] | null,
+  achievementId: number | null
+): Achievement | undefined {
   if (!allAchievements || !achievementId) return undefined;
   return allAchievements.find((a) => a.id === achievementId);
 }
 
 // Get account achievement by achievement ID
-export function getAccountAchievementById(accountAchievements: AccountAchievement[] | null, achievementId: number | null): AccountAchievement | undefined {
+export function getAccountAchievementById(
+  accountAchievements: AccountAchievement[] | null,
+  achievementId: number | null
+): AccountAchievement | undefined {
   if (!accountAchievements || !achievementId) return undefined;
   return accountAchievements.find((a) => a.id === achievementId);
 }
 
 // Get category name by ID
-export function getCategoryName(categories: AchievementCategory[] | null, categoryId: number | null): string {
+export function getCategoryName(
+  categories: AchievementCategory[] | null,
+  categoryId: number | null
+): string {
   if (!categoryId || !categories) return "Achievements";
   const category = categories.find((cat) => cat.id === categoryId);
   return category?.name || "Achievements";
@@ -148,9 +167,10 @@ export function getAchievementsForGroup(
   if (!allAchievements || !categories || !groups || !groupId) return [];
   const group = groups.find((g) => g.id === groupId);
   if (!group) return [];
-  const groupCategoryIds = group.categories.map((id) => typeof id === 'string' ? parseInt(id, 10) : id);
+  const groupCategoryIds = group.categories.map((id) =>
+    typeof id === "string" ? parseInt(id, 10) : id
+  );
   return groupCategoryIds.flatMap((catId) =>
     getAchievementsForCategory(allAchievements, categories, catId)
   );
 }
- 
