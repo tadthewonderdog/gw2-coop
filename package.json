@@ -26,8 +26,6 @@
     "security:fix": "npm audit fix",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "build:ssr": "cross-env BUILD_TARGET=client vite build && cross-env BUILD_TARGET=ssr vite build --ssr src/entry-worker.ts --outDir dist/server",
-    "preview:ssr": "wrangler dev --local",
     "deploy": "wrangler deploy"
   },
   "dependencies": {

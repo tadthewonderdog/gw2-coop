@@ -33,9 +33,8 @@ $ npx wrangler dev
 
 - Uses [@cloudflare/vite-plugin](https://developers.cloudflare.com/workers/vite-plugin/get-started/) for seamless Vite + Workers integration.
 - Static assets are served from `dist/client` via Wrangler's `site.bucket` config.
-- Worker entry is `src/index.ts` (see for custom logic or API routes).
-- All asset and route paths are at the root (`/`).
-- To deploy:
+- The worker entry point is `src/index.ts`, which can be used for custom server-side logic or API routes.
+- To deploy to Cloudflare:
   ```bash
   npm run deploy
   ```
@@ -122,7 +121,7 @@ src/
 - Toggle with `VITE_USE_GW2_CACHE`.
 - Cached data in `public/data/*.json`.
 - Falls back to live API if cache fails.
-- Refresh cache: `npm run fetch-achievement-data`.
+- Refresh cache: `npm run fetch:gw2-achievement-data`.
 
 ### API Key Management
 
@@ -201,14 +200,13 @@ src/
 - `npm run format:check` - Check formatting
 - `npm run type-check` - TypeScript check
 - `npm run validate` - All checks
-- `npm run fetch-achievement-data` - Refresh GW2 achievement cache
+- `npm run fetch:gw2-achievement-data` - Refresh GW2 achievement cache
 - `npm run deploy` - Deploy to Cloudflare Workers
 
 ---
 
 ## ❌ Removed/Deprecated
 
-- SSR entry points and `vite-plugin-ssr` are no longer used.
 - No custom static asset handler in Worker; Wrangler serves assets via `site.bucket`.
 - No `/gw2-coop/` base path; all assets and routes are at `/`.
 
