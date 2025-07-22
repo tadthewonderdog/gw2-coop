@@ -1,5 +1,5 @@
 {
-  "name": "client",
+  "name": "gw2-coop",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -25,7 +25,10 @@
     "security:audit": "npm audit --audit-level=high",
     "security:fix": "npm audit fix",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "build:ssr": "cross-env BUILD_TARGET=client vite build && cross-env BUILD_TARGET=ssr vite build --ssr src/entry-worker.ts --outDir dist/server",
+    "preview:ssr": "wrangler dev --local",
+    "deploy": "wrangler deploy"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.11",
@@ -51,6 +54,8 @@
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^4.0.1",
+    "@cloudflare/vite-plugin": "^1.9.6",
+    "@cloudflare/workers-types": "^4.20250719.0",
     "@storybook/addon-a11y": "^9.0.16",
     "@storybook/addon-docs": "^9.0.16",
     "@storybook/addon-vitest": "^9.0.16",
@@ -94,6 +99,7 @@
     "typescript": "~5.8.3",
     "vite": "^7.0.4",
     "vite-bundle-analyzer": "^1.1.0",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "wrangler": "^4.25.0"
   }
 }
