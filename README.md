@@ -204,17 +204,26 @@ src/
 - `npm run dev` - Start dev server (Cloudflare Workers emulation)
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build
-- `npm run test` - Run tests
-- `npm run test:watch` - Watch mode
-- `npm run test:coverage` - Coverage report
-- `npm run lint` - Lint
-- `npm run lint:fix` - Auto-fix lint
-- `npm run format` - Format code
-- `npm run format:check` - Check formatting
-- `npm run type-check` - TypeScript check
-- `npm run validate` - All checks
-- `npm run fetch:gw2-achievement-data` - Refresh GW2 achievement cache
 - `npm run deploy` - Deploy to Cloudflare Workers
+- `npm run lint` - Lint code with ESLint
+- `npm run lint:fix` - Auto-fix lint issues
+- `npm run format` - Format code with Prettier
+- `npm run format:check` - Check code formatting
+- `npm run type-check` - TypeScript type check
+- `npm run validate` - Run lint, format check, and type-check
+- `npm run validate:prepush` - Run full test and validation before push
+- `npm run test` - Run all tests (Vitest)
+- `npm run test:watch` - Run tests in watch mode
+- `npm run test:coverage` - Run tests with coverage report
+- `npm run test:storybook` - Run Vitest tests for Storybook project
+- `npm run test:unit` - Run Vitest unit tests
+- `npm run fetch:gw2-achievement-data` - Refresh GW2 achievement cache
+- `npm run analyze:css` - Analyze CSS bundle size
+- `npm run analyze:bundle` - Analyze JS bundle size
+- `npm run security:audit` - Run npm audit for security
+- `npm run security:fix` - Run npm audit fix
+- `npm run storybook` - Start Storybook dev server
+- `npm run build-storybook` - Build Storybook static site
 
 ---
 
