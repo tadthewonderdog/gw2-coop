@@ -20,12 +20,25 @@ $ npm install
 $ cp .env.example .env
 # Edit .env as needed (see below)
 
-# 4. Start the dev server (Cloudflare Workers emulation)
+# 4. Start the dev server (Client + Cloudflare Worker emulation)
 $ npm run dev
-# or
-$ npx wrangler dev
-# App: http://localhost:8787
+# App: http://localhost:5173 (or the port Vite chooses)
 ```
+
+---
+
+## 🖥️ Local Development & Preview
+
+| Purpose                | Script         | Command            | Notes                                      |
+|------------------------|---------------|--------------------|--------------------------------------------|
+| Dev server (local)     | dev           | npm run dev        | Vite + Cloudflare Worker emulation         |
+| Preview prod build     | preview       | npm run preview    | Static preview, no Worker emulation        |
+| Deploy to Cloudflare   | deploy        | npm run deploy     | Deploys to Cloudflare Workers              |
+
+- **There is no separate server/SSR start script.**
+- The Worker/server logic is always run via the same dev command (`npm run dev`) in this setup.
+- For most development, use `npm run dev`.
+- Use `npm run preview` to see the static production build (no Worker logic).
 
 ---
 
