@@ -11,7 +11,7 @@ A modern, robust, and type-safe React application for Guild Wars 2 cooperative g
 ```bash
 # 1. Clone the repo
 $ git clone https://github.com/tadthewonderdog/gw2-coop.git
-$ cd gw2-coop/client
+$ cd gw2-coop
 
 # 2. Install dependencies
 $ npm install
@@ -20,10 +20,25 @@ $ npm install
 $ cp .env.example .env
 # Edit .env as needed (see below)
 
-# 4. Start the dev server
+# 4. Start the dev server (Cloudflare Workers emulation)
 $ npm run dev
-# App: http://localhost:3000
+# or
+$ npx wrangler dev
+# App: http://localhost:8787
 ```
+
+---
+
+## ☁️ Cloudflare Workers Integration
+
+- Uses [@cloudflare/vite-plugin](https://developers.cloudflare.com/workers/vite-plugin/get-started/) for seamless Vite + Workers integration.
+- Static assets are served from `dist/client` via Wrangler's `site.bucket` config.
+- Worker entry is `src/index.ts` (see for custom logic or API routes).
+- All asset and route paths are at the root (`/`).
+- To deploy:
+  ```bash
+  npm run deploy
+  ```
 
 ---
 
@@ -74,6 +89,7 @@ src/
 - **Validation**: [Zod](https://zod.dev/)
 - **Testing**: [Vitest](https://vitest.dev/), [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/)
 - **Linting/Formatting**: ESLint, Prettier
+- **Cloudflare Workers**: [@cloudflare/vite-plugin](https://developers.cloudflare.com/workers/vite-plugin/get-started/), Wrangler
 
 ---
 
@@ -167,12 +183,13 @@ src/
 - [Zod](https://zod.dev/)
 - [Vitest](https://vitest.dev/)
 - [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/)
+- [Cloudflare Workers Vite Plugin](https://developers.cloudflare.com/workers/vite-plugin/get-started/)
 
 ---
 
 ## 📦 Scripts
 
-- `npm run dev` - Start dev server
+- `npm run dev` - Start dev server (Cloudflare Workers emulation)
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build
 - `npm run test` - Run tests
@@ -185,6 +202,15 @@ src/
 - `npm run type-check` - TypeScript check
 - `npm run validate` - All checks
 - `npm run fetch-achievement-data` - Refresh GW2 achievement cache
+- `npm run deploy` - Deploy to Cloudflare Workers
+
+---
+
+## ❌ Removed/Deprecated
+
+- SSR entry points and `vite-plugin-ssr` are no longer used.
+- No custom static asset handler in Worker; Wrangler serves assets via `site.bucket`.
+- No `/gw2-coop/` base path; all assets and routes are at `/`.
 
 ---
 
