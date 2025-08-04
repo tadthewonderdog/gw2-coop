@@ -21,6 +21,9 @@ dist
 dist-ssr
 *.local
 
+.wrangler
+.dev.vars*
+
 # Misc
 .DS_Store
 

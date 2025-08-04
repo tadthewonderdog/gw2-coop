@@ -1,19 +1,32 @@
 {
   // Cloudflare Worker configuration
   "name": "gw2-coop-ssr",
-  "main": "./src/index.ts",
+  "main": "./worker/index.ts",
   "compatibility_date": "2024-07-01",
-  "workers_dev": true,
+  // "workers_dev": true,
+  "assets": {
+    "not_found_handling": "single-page-application",
+    "run_worker_first": [
+      "/api/*"
+    ]
+  },
   "routes": [
-    "https://wonderdog.win/*"
-  ],
-  "kv_namespaces": [
     {
-      "binding": "GROUP_CACHE",
-      "id": "9c4d95a359bd4895be5dbdce8b2e5d2f"
+      "pattern": "www.wonderdog.win",
+      "custom_domain": true
     }
-  ],
-  "site": {
-    "bucket": "./dist/client"
-  }
+  ]
+
+  // "routes": [
+  //   "https://www.wonderdog.win/*"
+  // ],
+  // "kv_namespaces": [
+  //   {
+  //     "binding": "GROUP_CACHE",
+  //     "id": "9c4d95a359bd4895be5dbdce8b2e5d2f"
+  //   }
+  // ],
+  // "site": {
+  //   "bucket": "./dist/client"
+  // }
 } 

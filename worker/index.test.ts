@@ -9,12 +9,6 @@ const helloSchema = z.object({
   message: z.string(),
 });
 
-vi.mock("hono/cloudflare-pages", () => {
-  return {
-    serveStatic: vi.fn(() => (_c: Hono, next: Next) => next()),
-  };
-});
-
 describe("Hono app", () => {
   it('should return a "hello" message for the /api/hello route', async () => {
     const res = await app.request("/api/hello");
