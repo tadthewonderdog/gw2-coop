@@ -1,5 +1,4 @@
-import type { Hono, Next } from "hono";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
 import app from "./index";
@@ -13,7 +12,7 @@ describe("Hono app", () => {
   it('should return a "hello" message for the /api/hello route', async () => {
     const res = await app.request("/api/hello");
     expect(res.status).toBe(200);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
     const json = await res.json();
     const parsed = helloSchema.parse(json);
     expect(parsed).toEqual({ ok: true, message: "Hello from Hono!" });
