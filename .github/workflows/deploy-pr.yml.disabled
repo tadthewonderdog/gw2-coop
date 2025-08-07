@@ -17,7 +17,7 @@ on:
 env:
   NODE_VERSION: '20'
   PR_NUMBER: ${{ github.event.number || 39 }}
-  FULL_DOMAIN: "https://pr${{ github.event.number }}-gw2-coop-preview.tadthewonderdog.workers.dev"
+  PREVIEW_URL: "https://pr${{ github.event.number }}-gw2-coop-preview.tadthewonderdog.workers.dev"
 
 jobs:
   deploy-preview:
@@ -46,24 +46,10 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           
-          echo "Deploying PR #${PR_NUMBER} to ${FULL_DOMAIN}..."
+          echo "Deploying PR #${PR_NUMBER} to ${PREVIEW_URL}..."
           
           npx wrangler versions upload --preview-alias "pr${PR_NUMBER}" 
             
-      # - name: Comment PR
-      #   uses: actions/github-script@v7
-      #   with:
-      #     script: |
-      #       const prNumber = context.payload.number;
-      #       const subdomain = `pr${prNumber}`;
-      #       const url = `https://${subdomain}-gw2-coop-preview.tadthewonderdog.workers.dev`;
-            
-      #       github.rest.issues.createComment({
-      #         issue_number: prNumber,
-      #         owner: context.repo.owner,
-      #         repo: context.repo.repo,
-      #         body: `🚀 **Preview deployed successfully!**\n\n📍 **URL:** ${url}\n\n> This preview will be automatically updated when you push new commits to this PR.`
-      #       });
       - name: Comment PR
         uses: thollander/actions-comment-pull-request@v3
         with:

@@ -17,10 +17,21 @@ permissions:
 env:
   NODE_VERSION: '20'
   WORKING_DIRECTORY: .
-  VITE_USE_GW2_CACHE: true
-
+  PR_NUMBER: ${{ github.event.number || 39 }}
+  PREVIEW_URL: "https://pr${{ github.event.number }}-gw2-coop-preview.tadthewonderdog.workers.dev"
 
 jobs:
+  create_preview_comment:
+    name: Create preview comment for later updating
+    uses: thollander/actions-comment-pull-request@v3
+    if: github.event.action != 'closed'
+
+    with:
+      message: |
+        🚀 *Reserved for preview URL
+      comment_tag: preview_url
+      pr-number: ${{ github.event.number}}
+
   # Security and dependency checks
   security:
     name: Security Scan
@@ -180,12 +191,13 @@ jobs:
     name: Deploy Preview
     runs-on: ubuntu-latest
     needs: build
-    if: github.event_name == 'pull_request'
-    environment:
-      name: preview
-      url: https://pr${{ github.event.number }}.wonderdog.win
+    if: github.event_name == 'pull_request' && github.event.action != 'closed'
+    # environment:
+    #   name: preview
+    #   url: https://pr${{ github.event.number }}.wonderdog.win
     permissions:
       contents: read
+      pull-requests: write
     concurrency:
       group: "preview-${{ github.event.number }}"
       cancel-in-progress: true
@@ -201,9 +213,21 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy --config wrangler.preview.jsonc --route pr${{ github.event.number }}.wonderdog.win
+          command: versions upload --preview-alias pr${{ github.event.number }}
           packageManager: npm
           workingDirectory: .
+      - name: Comment PR
+        uses: thollander/actions-comment-pull-request@v3
+        with:
+          message: |
+            🚀 **Preview deployed successfully!**
+            
+            📍 **URL:** [On Cloudflare](https://pr${{ github.event.number }}-gw2-coop-preview.tadthewonderdog.workers.dev)
+            
+            This preview will be automatically updated when you push new commits to this PR.`
+          comment_tag: preview_url
+          pr-number: ${{ github.event.number}}
+  
 
   # Production deployment using Cloudflare Workers
   deploy-production:
