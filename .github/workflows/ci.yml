@@ -24,11 +24,10 @@ jobs:
   create_preview_comment:
     name: Create preview comment for later updating
     uses: thollander/actions-comment-pull-request@v3
-    if: github.event.action != 'closed'
-
     with:
       message: |
         🚀 *Reserved for preview URL
+        📍 **URL:** [On Cloudflare](https://pr${{ github.event.number }}-gw2-coop-preview.tadthewonderdog.workers.dev)
       comment_tag: preview_url
       pr-number: ${{ github.event.number}}
 
