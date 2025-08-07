@@ -217,11 +217,16 @@ jobs:
         id: deploy
         uses: cloudflare/wrangler-action@v3
         with:
+          wranglerVersion: 4
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: versions upload --preview-alias pr${{ github.event.number }}
           packageManager: npm
           workingDirectory: .
+        # run: |
+        #   npx wrangler upload --preview-alias ${{ github.event.number }}
+        #   echo "✅ Build completed successfully"
+        # working-directory: .
       - name: Comment PR
         uses: thollander/actions-comment-pull-request@v3
         with:
@@ -240,7 +245,8 @@ jobs:
     name: Deploy to Production
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && github.event.action == 'closed'
+
     # Production deployment to Cloudflare Workers
     steps:
       - name: Download build artifacts
@@ -253,6 +259,6 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy --config wrangler.prod.jsonc
+          command: deploy
           packageManager: npm
           workingDirectory: .
