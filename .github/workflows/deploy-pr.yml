@@ -1,5 +1,9 @@
 name: Deploy PR Preview
 
+permissions:
+  contents: read
+  pull-requests: write
+  
 on:
   pull_request:
     types: [opened, synchronize, reopened]
@@ -12,9 +16,8 @@ on:
 
 env:
   NODE_VERSION: '20'
-  PR_NUMBER: ${{ github.event.number || '123' }}
-  SUBDOMAIN: "pr${ PR_NUMBER }"
-  FULL_DOMAIN: "https://${ SUBDOMAIN }-gw2-coop-preview.tadthewonderdog.workers.dev"
+  PR_NUMBER: ${{ github.event.number || 39 }}
+  FULL_DOMAIN: "https://pr${{ github.event.number }}-gw2-coop-preview.tadthewonderdog.workers.dev"
 
 jobs:
   deploy-preview:
