@@ -12,16 +12,14 @@ on:
 
 env:
   NODE_VERSION: '20'
+  PR_NUMBER: ${{ github.event.number || '123' }}
+  SUBDOMAIN: "pr${ PR_NUMBER }"
+  FULL_DOMAIN: "https://${ SUBDOMAIN }-gw2-coop-preview.tadthewonderdog.workers.dev"
 
 jobs:
   deploy-preview:
     runs-on: ubuntu-latest
     if: github.event.action != 'closed'
-
-    env:
-      PR_NUMBER: ${{ github.event.number || '123' }}
-      SUBDOMAIN: "pr${PR_NUMBER}"
-      FULL_DOMAIN: https://"${SUBDOMAIN}-gw2-coop-preview.tadthewonderdog.workers.dev"
     
     steps:
       - name: Checkout
@@ -69,10 +67,10 @@ jobs:
           message: |
             🚀 **Preview deployed successfully!**
             
-            📍 **URL:** `${FULL_DOMAIN}`
+            📍 **URL:** `https://pr${{ github.event.number }}-gw2-coop-preview.tadthewonderdog.workers.dev`
             
             This preview will be automatically updated when you push new commits to this PR.`
-          pr-number: ${{ github.event.number || '123' }} # This will comment on pull request #123
+          pr-number: ${{ github.event.number}} # This will comment on pull request #123
   # cleanup-preview:
   #   runs-on: ubuntu-latest
   #   if: github.event.action == 'closed'
