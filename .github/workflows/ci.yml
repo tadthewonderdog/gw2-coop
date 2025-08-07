@@ -174,7 +174,12 @@ jobs:
       # - name: Cache GW2 achievement data
       #   run: npm run fetch:gw2-achievement-data
       #   working-directory: .
+      - name: Build Preview application
+        if: github.event.action != 'closed'
+        run: npm run build:preview
+        working-directory: .
       - name: Build application
+        if: github.ref == 'refs/heads/main' && github.event.action == 'closed'
         run: npm run build
         working-directory: .
       - name: Upload build artifacts
