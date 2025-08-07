@@ -3,7 +3,7 @@ name: Deploy PR Preview
 permissions:
   contents: read
   pull-requests: write
-  
+
 on:
   pull_request:
     types: [opened, synchronize, reopened]
@@ -70,10 +70,12 @@ jobs:
           message: |
             🚀 **Preview deployed successfully!**
             
-            📍 **URL:** `https://pr${{ github.event.number }}-gw2-coop-preview.tadthewonderdog.workers.dev`
+            📍 **URL:** [On Cloudflare](https://pr${{ github.event.number }}-gw2-coop-preview.tadthewonderdog.workers.dev)
             
             This preview will be automatically updated when you push new commits to this PR.`
-          pr-number: ${{ github.event.number}} # This will comment on pull request #123
+          comment_tag: preview_url
+          pr-number: ${{ github.event.number}}
+          
   # cleanup-preview:
   #   runs-on: ubuntu-latest
   #   if: github.event.action == 'closed'
