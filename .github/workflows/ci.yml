@@ -218,6 +218,11 @@ jobs:
         with:
           name: build-artifacts-${{ github.sha }}
           path: dist
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            wrangler.jsonc
+          sparse-checkout-cone-mode: false
       - name: Deploy to Cloudflare Workers (Preview)
         id: deploy
         uses: cloudflare/wrangler-action@v3
