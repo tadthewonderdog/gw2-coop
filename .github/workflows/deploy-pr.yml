@@ -1,0 +1,101 @@
+name: Deploy PR Preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  pull_request_review:
+    types: [submitted]
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  deploy-preview:
+    runs-on: ubuntu-latest
+    if: github.event.action != 'closed'
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build
+        run: npm run build:preview
+        
+      - name: Deploy to Cloudflare Workers
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          PR_NUMBER=${{ github.event.number || '123' }}
+          SUBDOMAIN="pr${PR_NUMBER}"
+          FULL_DOMAIN="${SUBDOMAIN}.wonderdog.win"
+          
+          echo "Deploying PR #${PR_NUMBER} to ${FULL_DOMAIN}..."
+          
+          npx wrangler versions upload --preview-alias "pr${PR_NUMBER}" 
+            
+      - name: Comment PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.payload.number;
+            const subdomain = `pr${prNumber}`;
+            const url = `https://${subdomain}-gw2-coop-preview.tadthewonderdog.workers.dev`;
+            
+            github.rest.issues.createComment({
+              issue_number: prNumber,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `🚀 **Preview deployed successfully!**\n\n📍 **URL:** ${url}\n\n> This preview will be automatically updated when you push new commits to this PR.`
+            });
+
+  # cleanup-preview:
+  #   runs-on: ubuntu-latest
+  #   if: github.event.action == 'closed'
+    
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+        
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: ${{ env.NODE_VERSION }}
+  #         cache: 'npm'
+          
+  #     - name: Install dependencies
+  #       run: npm ci
+        
+  #     - name: Delete preview deployment
+  #       env:
+  #         CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  #         CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+  #       run: |
+  #         PR_NUMBER=${{ github.event.number }}
+          
+  #         echo "Cleaning up PR #${PR_NUMBER} deployment..."
+          
+  #         # Delete the worker
+  #         npx wrangler delete "pr${PR_NUMBER}" --force || echo "Worker may not exist"
+          
+  #     - name: Comment PR
+  #       uses: actions/github-script@v7
+  #       with:
+  #         script: |
+  #           const prNumber = context.payload.number;
+            
+  #           github.rest.issues.createComment({
+  #             issue_number: prNumber,
+  #             owner: context.repo.owner,
+  #             repo: context.repo.repo,
+  #             body: `🧹 **Preview deployment cleaned up**\n\nThe preview environment for this PR has been removed.`
+  #           });

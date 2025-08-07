@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:preview": "tsc -b && vite build --mode preview",
     "lint": "NODE_OPTIONS='--max-old-space-size=8192' eslint .",
     "lint:fix": "NODE_OPTIONS='--max-old-space-size=8192' eslint . --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,css,md,json}\"",
@@ -99,6 +100,6 @@
     "vite": "^7.0.4",
     "vite-bundle-analyzer": "^1.1.0",
     "vitest": "^3.2.4",
-    "wrangler": "^4.25.0"
+    "wrangler": "^4.28.0"
   }
 }

@@ -41,3 +41,5 @@ TMP_*
 
 # TypeScript
 *.tsbuildinfo 
+test_*
+.secrets
