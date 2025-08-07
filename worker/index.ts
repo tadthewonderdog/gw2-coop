@@ -11,10 +11,13 @@ app.get("/api/hello", (c) => {
   return c.json({ ok: true, message: "Hello from Hono!" });
 });
 
-// Serve the main React app for all routes (SPA routing)
-app.get("/*", async (c) => {
-  // For Cloudflare Workers, we'll let the wrangler configuration handle static assets
-  // and just serve the main index.html for SPA routing
+// Handle 404 for unknown API routes
+app.notFound((c) => {
+  if (c.req.path.startsWith("/api/")) {
+    return c.json({ error: "API route not found" }, 404);
+  }
+
+  // Serve the main React app for frontend routes (SPA routing)
   return c.html(`
     <!DOCTYPE html>
     <html>
