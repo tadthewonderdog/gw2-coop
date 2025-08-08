@@ -218,11 +218,6 @@ jobs:
         with:
           name: build-artifacts-${{ github.sha }}
           path: dist
-      - uses: actions/checkout@v4
-        with:
-          sparse-checkout: |
-            wrangler.jsonc
-          sparse-checkout-cone-mode: false
       - name: Deploy to Cloudflare Workers (Preview)
         id: deploy
         uses: cloudflare/wrangler-action@v3
@@ -232,7 +227,7 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: versions upload --preview-alias pr${{ github.event.number }}
           packageManager: npm
-          workingDirectory: .
+          workingDirectory: dist/gw2_coop
         # run: |
         #   npx wrangler upload --preview-alias ${{ github.event.number }}
         #   echo "✅ Build completed successfully"
