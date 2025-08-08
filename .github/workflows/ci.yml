@@ -219,7 +219,6 @@ jobs:
       cancel-in-progress: true
     steps:
       - name: Download build artifacts
-        if: false
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts-${{ github.sha }}
