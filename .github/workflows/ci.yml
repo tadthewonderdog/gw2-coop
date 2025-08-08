@@ -219,6 +219,8 @@ jobs:
           name: build-artifacts-${{ github.sha }}
           path: dist
       - name: Getting file list
+        env:
+            CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           find .
           npx wrangler versions upload --preview-alias pr39
