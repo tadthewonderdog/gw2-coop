@@ -227,7 +227,7 @@ jobs:
       - name: Getting file list
         run: |
           find .
-        working-directory: dist/gw2_coop
+        working-directory: . # dist/gw2_coop
       - name: Deploy to Cloudflare Workers
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -236,7 +236,7 @@ jobs:
           npx wrangler whoami
           echo Deploying as pr${{ github.event.number }}
           echo npx wrangler versions upload --preview-alias pr${{ github.event.number }}
-        working-directory: dist/gw2_coop
+        working-directory: . # dist/gw2_coop
         
       - name: Deploy to Cloudflare Workers (Preview)
         id: deploy
