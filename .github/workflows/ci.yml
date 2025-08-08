@@ -219,13 +219,15 @@ jobs:
           name: build-artifacts-${{ github.sha }}
           path: dist
       - name: Getting file list
-        env:
-            CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           find .
-          npx wrangler versions upload --preview-alias pr39
         working-directory: dist/gw2_coop
-
+      - name: Deploy to Cloudflare Workers
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: npx wrangler versions upload --preview-alias pr${{ github.event.number }}
+        working-directory: dist/gw2_coop
+        
       - name: Deploy to Cloudflare Workers (Preview)
         id: deploy
         uses: cloudflare/wrangler-action@v3
