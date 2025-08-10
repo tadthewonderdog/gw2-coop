@@ -289,7 +289,7 @@ jobs:
         # working-directory: .
       - name: Comment PR
         uses: thollander/actions-comment-pull-request@v3
-        if: ${{ !env.PROD_RELEASE }}
+        if: !env.PROD_RELEASE
         with:
           message: |
             🚀 **Preview deployed successfully!**
@@ -300,7 +300,7 @@ jobs:
           pr-number: ${{ github.event.number}}
       - name: Delete a comment
         uses: thollander/actions-comment-pull-request@v3
-        if: ${{ env.PROD_RELEASE }}
+        if: env.PROD_RELEASE
         with:
           comment-tag: preview_url
           mode: delete
