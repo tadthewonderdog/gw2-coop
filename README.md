@@ -11,7 +11,7 @@ A modern, robust, and type-safe React application for Guild Wars 2 cooperative g
 ```bash
 # 1. Clone the repo
 $ git clone https://github.com/tadthewonderdog/gw2-coop.git
-$ cd gw2-coop/client
+$ cd gw2-coop
 
 # 2. Install dependencies
 $ npm install
@@ -20,10 +20,37 @@ $ npm install
 $ cp .env.example .env
 # Edit .env as needed (see below)
 
-# 4. Start the dev server
+# 4. Start the dev server (Client + Cloudflare Worker emulation)
 $ npm run dev
-# App: http://localhost:3000
+# App: http://localhost:5173 (or the port Vite chooses)
 ```
+
+---
+
+## 🖥️ Local Development & Preview
+
+| Purpose                | Script         | Command            | Notes                                      |
+|------------------------|---------------|--------------------|--------------------------------------------|
+| Dev server (local)     | dev           | npm run dev        | Vite + Cloudflare Worker emulation         |
+| Preview prod build     | preview       | npm run preview    | Static preview, no Worker emulation        |
+| Deploy to Cloudflare   | deploy        | npm run deploy     | Deploys to Cloudflare Workers              |
+
+- **There is no separate server/SSR start script.**
+- The Worker/server logic is always run via the same dev command (`npm run dev`) in this setup.
+- For most development, use `npm run dev`.
+- Use `npm run preview` to see the static production build (no Worker logic).
+
+---
+
+## ☁️ Cloudflare Workers Integration
+
+- Uses [@cloudflare/vite-plugin](https://developers.cloudflare.com/workers/vite-plugin/get-started/) for seamless Vite + Workers integration.
+- Static assets are served from `dist/client` via Wrangler's `site.bucket` config.
+- The worker entry point is `src/index.ts`, which can be used for custom server-side logic or API routes.
+- To deploy to Cloudflare:
+  ```bash
+  npm run deploy
+  ```
 
 ---
 
@@ -74,6 +101,7 @@ src/
 - **Validation**: [Zod](https://zod.dev/)
 - **Testing**: [Vitest](https://vitest.dev/), [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/)
 - **Linting/Formatting**: ESLint, Prettier
+- **Cloudflare Workers**: [@cloudflare/vite-plugin](https://developers.cloudflare.com/workers/vite-plugin/get-started/), Wrangler
 
 ---
 
@@ -106,7 +134,7 @@ src/
 - Toggle with `VITE_USE_GW2_CACHE`.
 - Cached data in `public/data/*.json`.
 - Falls back to live API if cache fails.
-- Refresh cache: `npm run fetch-achievement-data`.
+- Refresh cache: `npm run fetch:gw2-achievement-data`.
 
 ### API Key Management
 
@@ -167,24 +195,42 @@ src/
 - [Zod](https://zod.dev/)
 - [Vitest](https://vitest.dev/)
 - [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/)
+- [Cloudflare Workers Vite Plugin](https://developers.cloudflare.com/workers/vite-plugin/get-started/)
 
 ---
 
 ## 📦 Scripts
 
-- `npm run dev` - Start dev server
+- `npm run dev` - Start dev server (Cloudflare Workers emulation)
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build
-- `npm run test` - Run tests
-- `npm run test:watch` - Watch mode
-- `npm run test:coverage` - Coverage report
-- `npm run lint` - Lint
-- `npm run lint:fix` - Auto-fix lint
-- `npm run format` - Format code
-- `npm run format:check` - Check formatting
-- `npm run type-check` - TypeScript check
-- `npm run validate` - All checks
-- `npm run fetch-achievement-data` - Refresh GW2 achievement cache
+- `npm run deploy` - Deploy to Cloudflare Workers
+- `npm run lint` - Lint code with ESLint
+- `npm run lint:fix` - Auto-fix lint issues
+- `npm run format` - Format code with Prettier
+- `npm run format:check` - Check code formatting
+- `npm run type-check` - TypeScript type check
+- `npm run validate` - Run lint, format check, and type-check
+- `npm run validate:prepush` - Run full test and validation before push
+- `npm run test` - Run all tests (Vitest)
+- `npm run test:watch` - Run tests in watch mode
+- `npm run test:coverage` - Run tests with coverage report
+- `npm run test:storybook` - Run Vitest tests for Storybook project
+- `npm run test:unit` - Run Vitest unit tests
+- `npm run fetch:gw2-achievement-data` - Refresh GW2 achievement cache
+- `npm run analyze:css` - Analyze CSS bundle size
+- `npm run analyze:bundle` - Analyze JS bundle size
+- `npm run security:audit` - Run npm audit for security
+- `npm run security:fix` - Run npm audit fix
+- `npm run storybook` - Start Storybook dev server
+- `npm run build-storybook` - Build Storybook static site
+
+---
+
+## ❌ Removed/Deprecated
+
+- No custom static asset handler in Worker; Wrangler serves assets via `site.bucket`.
+- No `/gw2-coop/` base path; all assets and routes are at `/`.
 
 ---
 

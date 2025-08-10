@@ -31,11 +31,11 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-        working-directory: client
+        working-directory: .
 
       - name: Fetch GW2 achievement data
-        run: npm run fetch:gw2-achievement-data
-        working-directory: client
+        run: npm run fetch-gw2-achievement-data
+        working-directory: .
 
       - name: Download latest deployed site artifact (try gh, fallback to curl)
         id: download_artifact
@@ -69,7 +69,7 @@ jobs:
       - name: Copy new data files into site
         run: |
           mkdir -p _site/data
-          cp client/public/data/*.json _site/data/
+          cp public/data/*.json _site/data/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

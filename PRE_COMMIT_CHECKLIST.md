@@ -4,12 +4,11 @@ Before checking in code, always run and verify the following:
 
 ## Fresh Install
 We need to:
-- Verify you are in the "client" directory
 - Remove the "node_modules" directory
 - Install npm packages
 - Install playwright to download browser binaries for Storybook tests
 Just run the single command to do all of it:
-`cd client; rm -rf node_modules && npm install && npx playwright install`
+`rm -rf node_modules && npm install && npx playwright install`
 
 ## Testing
 - [ ] Run all unit tests: `npm run test`

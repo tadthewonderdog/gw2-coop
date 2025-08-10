@@ -53,6 +53,7 @@ module.exports = [
         project: [
           path.resolve(__dirname, "./tsconfig.app.json"),
           path.resolve(__dirname, "./tsconfig.node.json"),
+          path.resolve(__dirname, "./tsconfig.worker.json"),
         ],
         tsconfigRootDir: __dirname,
         ecmaVersion: "latest",

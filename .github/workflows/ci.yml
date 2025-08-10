@@ -16,12 +16,73 @@ permissions:
 
 env:
   NODE_VERSION: '20'
-  WORKING_DIRECTORY: client
-  VITE_USE_GW2_CACHE: true
-  VITE_BASE_PATH: /gw2-coop/
-
+  WORKING_DIRECTORY: .
+  PROD_RELEASE: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
+  PR_NUMBER: ${{ github.event.number }}
+  PREVIEW_URL: "https://pr${{ github.event.number }}-gw2-coop-preview.tadthewonderdog.workers.dev"
 
 jobs:
+  create_preview_comment:
+    name: Create preview comment for later updating
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    if: github.event_name == 'pull_request' && github.event.action == 'open'
+    steps:
+      - name: Create preview comment for later updating
+        uses: thollander/actions-comment-pull-request@v3
+        with:
+          message: |
+            🚀 *Reserved for preview URL
+            📍 **URL:** COMINT SOON
+          comment-tag: preview_url
+          create-if-not-exists: true
+          pr-number: ${{ github.event.number}}
+
+  # dump_contexts_to_log:
+  #   runs-on: ubuntu-latest
+  #   # if: ${{ false }}
+  #   steps:
+  #     - name: Check if not prod
+  #       if: ${{ env.PROD_RELEASE == 'false' }}
+  #       run: echo blarg not prod
+  #     - name: Check if prod
+  #       if: ${{ env.PROD_RELEASE == 'true' }}
+  #       run: echo blarg2 prod
+
+  #     - name: PROD_RELEASE
+  #       run: echo ${{ env.PROD_RELEASE }} ; echo ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
+  #     - name: Dump env context
+  #       env:
+  #         ENV_CONTEXT: ${{ toJson(env) }}
+  #       run: echo "$ENV_CONTEXT"
+  #     - name: Dump GitHub context
+  #       env:
+  #         GITHUB_CONTEXT: ${{ toJson(github) }}
+  #       run: echo "$GITHUB_CONTEXT"
+  #     - name: Dump job context
+  #       env:
+  #         JOB_CONTEXT: ${{ toJson(job) }}
+  #       run: echo "$JOB_CONTEXT"
+  #     - name: Dump steps context
+  #       env:
+  #         STEPS_CONTEXT: ${{ toJson(steps) }}
+  #       run: echo "$STEPS_CONTEXT"
+  #     - name: Dump runner context
+  #       env:
+  #         RUNNER_CONTEXT: ${{ toJson(runner) }}
+  #       run: echo "$RUNNER_CONTEXT"
+  #     - name: Dump strategy context
+  #       env:
+  #         STRATEGY_CONTEXT: ${{ toJson(strategy) }}
+  #       run: echo "$STRATEGY_CONTEXT"
+  #     - name: Dump matrix context
+  #       env:
+  #         MATRIX_CONTEXT: ${{ toJson(matrix) }}
+  #       run: echo "$MATRIX_CONTEXT"
+
+
   # Security and dependency checks
   security:
     name: Security Scan
@@ -40,19 +101,19 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: ${{ env.WORKING_DIRECTORY }}/package-lock.json
+          cache-dependency-path: ./package-lock.json
 
       - name: Install dependencies
         run: npm ci
-        working-directory: ${{ env.WORKING_DIRECTORY }}
+        working-directory: .
 
       - name: Run security audit
         run: npm audit --audit-level=high
-        working-directory: ${{ env.WORKING_DIRECTORY }}
+        working-directory: .
 
       - name: Check for known vulnerabilities
         run: npx better-npm-audit audit --level high
-        working-directory: ${{ env.WORKING_DIRECTORY }}
+        working-directory: .
 
   # Code quality and linting
   lint:
@@ -66,19 +127,19 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: ${{ env.WORKING_DIRECTORY }}/package-lock.json
+          cache-dependency-path: ./package-lock.json
       - name: Install dependencies
         run: npm ci
-        working-directory: ${{ env.WORKING_DIRECTORY }}
+        working-directory: .
       - name: Lint code
         run: npm run lint
-        working-directory: ${{ env.WORKING_DIRECTORY }}
+        working-directory: .
       - name: Check formatting
         run: npm run format:check
-        working-directory: ${{ env.WORKING_DIRECTORY }}
+        working-directory: .
       - name: Validate package structure
         run: npm run validate
-        working-directory: ${{ env.WORKING_DIRECTORY }}
+        working-directory: .
 
   type-check:
     name: Type Check
@@ -91,13 +152,13 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: ${{ env.WORKING_DIRECTORY }}/package-lock.json
+          cache-dependency-path: ./package-lock.json
       - name: Install dependencies
         run: npm ci
-        working-directory: ${{ env.WORKING_DIRECTORY }}
+        working-directory: .
       - name: Type check
         run: npm run type-check
-        working-directory: ${{ env.WORKING_DIRECTORY }}
+        working-directory: .
 
   test:
     name: Test Suite
@@ -110,20 +171,20 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: ${{ env.WORKING_DIRECTORY }}/package-lock.json
+          cache-dependency-path: ./package-lock.json
       - name: Install dependencies
         run: npm ci
-        working-directory: ${{ env.WORKING_DIRECTORY }}
+        working-directory: .
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
-        working-directory: ${{ env.WORKING_DIRECTORY }}
+        working-directory: .
       - name: Run tests with coverage
         run: npm run test:coverage
-        working-directory: ${{ env.WORKING_DIRECTORY }}
+        working-directory: .
       - name: Upload coverage reports
         uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5.4.3
         with:
-          directory: ${{ env.WORKING_DIRECTORY }}/coverage
+          directory: ./coverage
           fail_ci_if_error: false
           verbose: true
       - name: Check coverage threshold
@@ -136,7 +197,7 @@ jobs:
           else
             echo "✅ Coverage $COVERAGE% meets threshold"
           fi
-        working-directory: ${{ env.WORKING_DIRECTORY }}
+        working-directory: .
 
   # Build and artifact creation
   build:
@@ -151,21 +212,26 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: ${{ env.WORKING_DIRECTORY }}/package-lock.json
+          cache-dependency-path: ./package-lock.json
       - name: Install dependencies
         run: npm ci
-        working-directory: ${{ env.WORKING_DIRECTORY }}
+        working-directory: .
       # - name: Cache GW2 achievement data
       #   run: npm run fetch:gw2-achievement-data
-      #   working-directory: ${{ env.WORKING_DIRECTORY }}
+      #   working-directory: .
+      - name: Build Preview application
+        if: github.event.action != 'closed'
+        run: npm run build:preview
+        working-directory: .
       - name: Build application
+        if: github.ref == 'refs/heads/main' && github.event.action == 'closed'
         run: npm run build
-        working-directory: ${{ env.WORKING_DIRECTORY }}
+        working-directory: .
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-artifacts-${{ github.sha }}
-          path: ${{ env.WORKING_DIRECTORY }}/dist
+          path: ./dist
           retention-days: 30
       - name: Analyze bundle size
         run: |
@@ -174,58 +240,101 @@ jobs:
           echo "📊 CSS Analysis:"
           npm run analyze:css 2>/dev/null || echo "CSS analysis not available"
           echo "✅ Build completed successfully"
-        working-directory: ${{ env.WORKING_DIRECTORY }}
+        working-directory: .
 
   # Deploy preview for PRs using GitHub Pages
   deploy-preview:
     name: Deploy Preview
     runs-on: ubuntu-latest
     needs: build
-    if: github.event_name == 'pull_request'
-    environment:
-      name: preview
-      url: ${{ steps.deploy.outputs.url }}
+    # if: github.event_name == 'pull_request' && github.event.action != 'closed'
+    # environment:
+    #   name: preview
+    #   url: https://pr${{ github.event.number }}.wonderdog.win
     permissions:
       contents: read
-      pages: write
-      id-token: write
+      pull-requests: write
     concurrency:
       group: "preview-${{ github.event.number }}"
       cancel-in-progress: true
     steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts-${{ github.sha }}
-          # path: dist
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: .
-      - name: Deploy to GitHub Pages
-        id: deploy
-        uses: actions/deploy-pages@v4
+          path: dist
+      - name: Deploy to Cloudflare Workers
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          echo Installing wrangler
+          npm i wrangler@4
 
-  # # Production deployment
+          if [ "${{ env.PROD_RELEASE }}" = "true" ]
+          then
+            echo "NOT DEPLOYING TO PROD"
+          else
+            echo Deploying as pr${{ github.event.number }}
+            echo npx wrangler versions upload --preview-alias pr${{ github.event.number }}
+            echo "✅ Build completed successfully"
+          fi
+        working-directory: . # dist/gw2_coop
+        
+      # - name: Deploy to Cloudflare Workers (Preview)
+      #   id: deploy
+      #   uses: cloudflare/wrangler-action@v3
+      #   with:
+      #     wranglerVersion: 4
+      #     apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      #     accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      #     command: versions upload --preview-alias pr${{ github.event.number }}
+      #     preCommands: find .
+      #     postCommands: find .
+      #     packageManager: /opt/hostedtoolcache/node/20.19.4/x64/bin/npm
+      #     workingDirectory: dist/gw2_coop
+        # working-directory: .
+      - name: Comment PR
+        uses: thollander/actions-comment-pull-request@v3
+        if: ${{ env.PROD_RELEASE == 'false' }}
+        with:
+          message: |
+            🚀 **Preview deployed successfully!**
+            📍 **URL:** [On Cloudflare](https://pr${{ github.event.number }}-gw2-coop-preview.tadthewonderdog.workers.dev)
+            
+            This preview will be automatically updated when you push new commits to this PR.`
+          comment-tag: preview_url
+          pr-number: ${{ github.event.number}}
+      - name: Delete a comment
+        uses: thollander/actions-comment-pull-request@v3
+        if: ${{ env.PROD_RELEASE == 'true' }}
+        with:
+          comment-tag: preview_url
+          mode: delete
+  
+
+  # Production deployment using Cloudflare Workers
   # deploy-production:
   #   name: Deploy to Production
   #   runs-on: ubuntu-latest
   #   needs: build
-  #   if: github.ref == 'refs/heads/main'
-  #   environment:
-  #     name: production
-  #     url: https://your-app.com
+  #   if: github.ref == 'refs/heads/main' && github.event.action == 'closed'
+
+  #   # Production deployment to Cloudflare Workers
   #   steps:
   #     - name: Download build artifacts
   #       uses: actions/download-artifact@v4
   #       with:
   #         name: build-artifacts-${{ github.sha }}
   #         path: dist
-  #     - name: Deploy to production
-  #       run: |
-  #         echo "🚀 Production deployment would happen here"
-  #         echo "Deployed to: https://your-app.com"
-  #       env:
-  #         DEPLOY_API_KEY: ${{ secrets.DEPLOY_API_KEY }}
+  #     - name: Deploy to Cloudflare Workers (Production)
+  #       uses: cloudflare/wrangler-action@v3
+  #       with:
+  #         apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  #         accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+  #         command: deploy
+  #         packageManager: npm
+  #         workingDirectory: .

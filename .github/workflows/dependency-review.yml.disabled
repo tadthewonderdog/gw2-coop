@@ -3,8 +3,8 @@ name: Dependency Review
 on:
   pull_request:
     paths:
-      - 'client/package*.json'
-      - 'client/yarn.lock'
+      - 'package*.json'
+      - 'yarn.lock'
 
 permissions:
   contents: read
@@ -21,7 +21,7 @@ jobs:
       - name: Dependency Review
         uses: actions/dependency-review-action@v4
         with:
-          # config-file: 'client/.github/dependency-review-config.yml'
+          # config-file: '.github/dependency-review-config.yml'
           fail-on-severity: high
           deny-licenses: GPL-2.0, GPL-3.0
           comment-summary-in-pr: always
