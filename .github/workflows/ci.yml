@@ -17,7 +17,8 @@ permissions:
 env:
   NODE_VERSION: '20'
   WORKING_DIRECTORY: .
-  PR_NUMBER: ${{ github.event.number || 39 }}
+  PROD_RELEASE: ${{  github.event_name == 'pull_request' && github.event.action == 'closed' }}
+  PR_NUMBER: ${{ github.event.number }}
   PREVIEW_URL: "https://pr${{ github.event.number }}-gw2-coop-preview.tadthewonderdog.workers.dev"
 
 jobs:
@@ -34,15 +35,15 @@ jobs:
         with:
           message: |
             🚀 *Reserved for preview URL
-            📍 **URL:** [On Cloudflare](https://pr${{ github.event.number }}-gw2-coop-preview.tadthewonderdog.workers.dev)
-          comment_tag: preview_url
+            📍 **URL:** COMINT SOON
+          comment-tag: preview_url
+          create-if-not-exists: true
           pr-number: ${{ github.event.number}}
 
   # Security and dependency checks
   security:
     name: Security Scan
     runs-on: ubuntu-latest
-    if: false
     permissions:
       contents: read
       security-events: write
@@ -75,7 +76,6 @@ jobs:
   lint:
     name: Lint Code
     runs-on: ubuntu-latest
-    if: false
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -101,7 +101,6 @@ jobs:
   type-check:
     name: Type Check
     runs-on: ubuntu-latest
-    if: false
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -121,7 +120,6 @@ jobs:
   test:
     name: Test Suite
     runs-on: ubuntu-latest
-    if: false
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -162,8 +160,7 @@ jobs:
   build:
     name: Build Application
     runs-on: ubuntu-latest
-    # if: false
-    # needs: [security, lint, type-check, test]
+    needs: [security, lint, type-check, test]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -218,76 +215,83 @@ jobs:
       group: "preview-${{ github.event.number }}"
       cancel-in-progress: true
     steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts-${{ github.sha }}
           path: dist
-      - name: Getting file list
-        run: |
-          find .
-        working-directory: . # dist/gw2_coop
       - name: Deploy to Cloudflare Workers
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           echo Installing wrangler
-          pwd
-          /usr/local/bin/npm i wrangler@4
-          echo Who am i?
-          echo npx wrangler whoami
-          echo Deploying as pr${{ github.event.number }}
-          echo npx wrangler versions upload --preview-alias pr${{ github.event.number }}
+          npm i wrangler@4
+
+          if [ "${{ env.PROD_RELEASE }}" = "true" ]
+          then
+            echo "NOT DEPLOYING TO PROD"
+          else
+            echo Deploying as pr${{ github.event.number }}
+            echo npx wrangler versions upload --preview-alias pr${{ github.event.number }}
+            echo "✅ Build completed successfully"
+          fi
         working-directory: . # dist/gw2_coop
         
-      - name: Deploy to Cloudflare Workers (Preview)
-        id: deploy
-        uses: cloudflare/wrangler-action@v3
-        with:
-          wranglerVersion: 4
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: versions upload --preview-alias pr${{ github.event.number }}
-          preCommands: find .
-          postCommands: find .
-          packageManager: npm
-          workingDirectory: dist/gw2_coop
-        # run: |
-        #   npx wrangler upload --preview-alias ${{ github.event.number }}
-        #   echo "✅ Build completed successfully"
+      # - name: Deploy to Cloudflare Workers (Preview)
+      #   id: deploy
+      #   uses: cloudflare/wrangler-action@v3
+      #   with:
+      #     wranglerVersion: 4
+      #     apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      #     accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      #     command: versions upload --preview-alias pr${{ github.event.number }}
+      #     preCommands: find .
+      #     postCommands: find .
+      #     packageManager: /opt/hostedtoolcache/node/20.19.4/x64/bin/npm
+      #     workingDirectory: dist/gw2_coop
         # working-directory: .
       - name: Comment PR
         uses: thollander/actions-comment-pull-request@v3
+        if: ${{ !env.PROD_RELEASE }}
         with:
           message: |
             🚀 **Preview deployed successfully!**
-            
             📍 **URL:** [On Cloudflare](https://pr${{ github.event.number }}-gw2-coop-preview.tadthewonderdog.workers.dev)
             
             This preview will be automatically updated when you push new commits to this PR.`
-          comment_tag: preview_url
+          comment-tag: preview_url
           pr-number: ${{ github.event.number}}
+      - name: Delete a comment
+        uses: thollander/actions-comment-pull-request@v3
+        if: ${{ env.PROD_RELEASE }}
+        with:
+          comment-tag: preview_url
+          mode: delete
   
 
   # Production deployment using Cloudflare Workers
-  deploy-production:
-    name: Deploy to Production
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.ref == 'refs/heads/main' && github.event.action == 'closed'
+  # deploy-production:
+  #   name: Deploy to Production
+  #   runs-on: ubuntu-latest
+  #   needs: build
+  #   if: github.ref == 'refs/heads/main' && github.event.action == 'closed'
 
-    # Production deployment to Cloudflare Workers
-    steps:
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts-${{ github.sha }}
-          path: dist
-      - name: Deploy to Cloudflare Workers (Production)
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy
-          packageManager: npm
-          workingDirectory: .
+  #   # Production deployment to Cloudflare Workers
+  #   steps:
+  #     - name: Download build artifacts
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: build-artifacts-${{ github.sha }}
+  #         path: dist
+  #     - name: Deploy to Cloudflare Workers (Production)
+  #       uses: cloudflare/wrangler-action@v3
+  #       with:
+  #         apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  #         accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+  #         command: deploy
+  #         packageManager: npm
+  #         workingDirectory: .
