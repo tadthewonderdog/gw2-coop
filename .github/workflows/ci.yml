@@ -40,40 +40,47 @@ jobs:
           create-if-not-exists: true
           pr-number: ${{ github.event.number}}
 
-  dump_contexts_to_log:
-    runs-on: ubuntu-latest
-    if: ${{ false }}
-    steps:
-      - name: PROD_RELEASE
-        run: echo ${{ env.PROD_RELEASE }} ; echo ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
-      - name: Dump env context
-        env:
-          ENV_CONTEXT: ${{ toJson(env) }}
-        run: echo "$ENV_CONTEXT"
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
-      - name: Dump job context
-        env:
-          JOB_CONTEXT: ${{ toJson(job) }}
-        run: echo "$JOB_CONTEXT"
-      - name: Dump steps context
-        env:
-          STEPS_CONTEXT: ${{ toJson(steps) }}
-        run: echo "$STEPS_CONTEXT"
-      - name: Dump runner context
-        env:
-          RUNNER_CONTEXT: ${{ toJson(runner) }}
-        run: echo "$RUNNER_CONTEXT"
-      - name: Dump strategy context
-        env:
-          STRATEGY_CONTEXT: ${{ toJson(strategy) }}
-        run: echo "$STRATEGY_CONTEXT"
-      - name: Dump matrix context
-        env:
-          MATRIX_CONTEXT: ${{ toJson(matrix) }}
-        run: echo "$MATRIX_CONTEXT"
+  # dump_contexts_to_log:
+  #   runs-on: ubuntu-latest
+  #   # if: ${{ false }}
+  #   steps:
+  #     - name: Check if not prod
+  #       if: ${{ env.PROD_RELEASE == 'false' }}
+  #       run: echo blarg not prod
+  #     - name: Check if prod
+  #       if: ${{ env.PROD_RELEASE == 'true' }}
+  #       run: echo blarg2 prod
+
+  #     - name: PROD_RELEASE
+  #       run: echo ${{ env.PROD_RELEASE }} ; echo ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
+  #     - name: Dump env context
+  #       env:
+  #         ENV_CONTEXT: ${{ toJson(env) }}
+  #       run: echo "$ENV_CONTEXT"
+  #     - name: Dump GitHub context
+  #       env:
+  #         GITHUB_CONTEXT: ${{ toJson(github) }}
+  #       run: echo "$GITHUB_CONTEXT"
+  #     - name: Dump job context
+  #       env:
+  #         JOB_CONTEXT: ${{ toJson(job) }}
+  #       run: echo "$JOB_CONTEXT"
+  #     - name: Dump steps context
+  #       env:
+  #         STEPS_CONTEXT: ${{ toJson(steps) }}
+  #       run: echo "$STEPS_CONTEXT"
+  #     - name: Dump runner context
+  #       env:
+  #         RUNNER_CONTEXT: ${{ toJson(runner) }}
+  #       run: echo "$RUNNER_CONTEXT"
+  #     - name: Dump strategy context
+  #       env:
+  #         STRATEGY_CONTEXT: ${{ toJson(strategy) }}
+  #       run: echo "$STRATEGY_CONTEXT"
+  #     - name: Dump matrix context
+  #       env:
+  #         MATRIX_CONTEXT: ${{ toJson(matrix) }}
+  #       run: echo "$MATRIX_CONTEXT"
 
 
   # Security and dependency checks
@@ -292,7 +299,7 @@ jobs:
         # working-directory: .
       - name: Comment PR
         uses: thollander/actions-comment-pull-request@v3
-        if: env.PROD_RELEASE == false
+        if: ${{ env.PROD_RELEASE == 'false' }}
         with:
           message: |
             🚀 **Preview deployed successfully!**
@@ -303,7 +310,7 @@ jobs:
           pr-number: ${{ github.event.number}}
       - name: Delete a comment
         uses: thollander/actions-comment-pull-request@v3
-        if: env.PROD_RELEASE
+        if: ${{ env.PROD_RELEASE == 'true' }}
         with:
           comment-tag: preview_url
           mode: delete
