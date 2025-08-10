@@ -289,7 +289,7 @@ jobs:
         # working-directory: .
       - name: Comment PR
         uses: thollander/actions-comment-pull-request@v3
-        if: !env.PROD_RELEASE
+        if: env.PROD_RELEASE == false
         with:
           message: |
             🚀 **Preview deployed successfully!**
